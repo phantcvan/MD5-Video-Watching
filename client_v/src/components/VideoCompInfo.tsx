@@ -17,7 +17,18 @@ const VideoCompInfo = ({ video, home, description }: VideoComp) => {
 
   const curWid = useSelector(getCurrentWidth);
   // thiết lập độ dài title
-  const titleMaxLength = curWid <= 480 ? "30" : curWid <= 1024 ? "48" : "70";
+  let titleMaxLength;
+  if (curWid <= 480) {
+    if (home) titleMaxLength = 30
+    else titleMaxLength = 25
+  } else if (curWid <= 1024) {
+    if (home) titleMaxLength = 48
+    else titleMaxLength = 30
+  } else {
+    if (home) titleMaxLength = 70
+    else titleMaxLength = 50
+  }
+  // const titleMaxLength = curWid <= 480 ? "30" : curWid <= 1024 ? "48" : "70";
   // thiết lập độ dài channel Name
   const channelMaxLength = curWid <= 480 ? "18" : curWid <= 1024 ? "35" : "70";
   return (
@@ -67,9 +78,9 @@ const VideoCompInfo = ({ video, home, description }: VideoComp) => {
             {`${handleNumber(Number(video?.views))}`} Views • {moment(video?.upload_date).fromNow()}
           </p>
           {description && <span className={`text-yt-gray cursor-default mt-1 font-medium text-[13px]`}>
-            {video?.description.length <= 250
+            {video?.description.length <= 150
               ? video?.description
-              : `${video?.description.substr(0, Number(200))}...`}
+              : `${video?.description.substr(0, Number(150))}...`}
           </span>}
         </div>
       </div>

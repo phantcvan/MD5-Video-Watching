@@ -4,6 +4,7 @@ import { Tag } from '../../tag/entities/tag.entity';
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Comment } from '../../comment/entities/comment.entity';
 import { History } from '../../history/entities/history.entity';
+import { Reaction } from 'src/reaction/entities/reaction.entity';
 
 @Entity()
 export class Video {
@@ -36,6 +37,9 @@ export class Video {
 
   @OneToMany(() => Tag, (tag) => tag.video)
   tags: Tag[]
+
+  @OneToMany(() => Reaction, (reaction) => reaction.video)
+  reaction: Reaction[]
 
   @OneToMany(() => History, (history) => history.video)
   history: History[]

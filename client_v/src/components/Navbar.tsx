@@ -152,11 +152,6 @@ const Navbar = () => {
   if (currentChannel != null) {
     // channel_id = allChannels?.find(channel => channel.email === user?.email)?.channel_id;
   }
-  // console.log("currentChannel", currentChannel);
-
-
-
-
 
 
   return (

@@ -58,7 +58,6 @@ export class ChannelService {
       });
       let newRecord = find.recordHistory === 0 ? 1 : 0;
       find.recordHistory = newRecord;
-      console.log("find", find);
       return await this.channelRepo.save(find);
     } catch (error) {
       console.error('Error occurred while updating history record:', error);

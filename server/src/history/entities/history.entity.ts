@@ -8,8 +8,8 @@ export class History {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @CreateDateColumn({ type: 'datetime' })
-  view_date: Date;
+  @Column()
+  view_date: string;
 
   @ManyToOne(() => Video, (video) => video.history, { onDelete: "CASCADE" })
   @JoinColumn({ name: 'videoId' })

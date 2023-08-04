@@ -108,6 +108,13 @@ export class VideoService {
     });
   }
 
+  findVideobyChannelId(id: number) {
+    return this.videoRepository.find({
+      where: { channel: { id: id } },
+      relations: { channel: true },
+    });
+  }
+
 
   async findNewVideo() {
     return this.videoRepository
@@ -126,11 +133,9 @@ export class VideoService {
     const video = await this.videoRepository.findOne({
       where: { videoCode },
     });
-
     if (video) {
       video.views = (Number(video.views) || 0) + 1;
       await this.videoRepository.save(video);
-
       return video;
     } else {
       throw new NotFoundException('Video not found');

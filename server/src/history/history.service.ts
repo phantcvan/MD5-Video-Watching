@@ -3,7 +3,7 @@ import { CreateHistoryDto } from './dto/create-history.dto';
 import { UpdateHistoryDto } from './dto/update-history.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { History } from './entities/history.entity';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { Video } from 'src/video/entities/video.entity';
 import { Channel } from 'src/channel/entities/channel.entity';
 import { ChannelService } from 'src/channel/channel.service';
@@ -18,9 +18,40 @@ export class HistoryService {
     private videoService: VideoService,
   ) { }
 
-  create(createHistoryDto: CreateHistoryDto) {
-    return 'This action adds a new history';
+  async create(createHistoryDto: CreateHistoryDto) {
+    const { channelId, videoId, view_date } = createHistoryDto;
+    const channel = await this.channelRepository.findOne({ where: { id: +channelId } });
+    const video = await this.videoRepository.findOne({ where: { id: +videoId } });
+    if (!channel || !video) {
+      throw new Error('Channel or Video not found'); // Xử lý trường hợp không tìm thấy Channel hoặc Video
+    }
+
+    const find = await this.historyRepository.findOne({
+      where: {
+        channel: { id: +channelId },
+        video: { id: +videoId },
+        view_date: view_date,
+      },
+    });
+    if (!find && channel?.recordHistory === 1) {
+      const newHistory = {
+        channel: channel,
+        view_date,
+        video: video,
+      };
+      return this.historyRepository.save(newHistory);
+    } else {
+      return 'History already exists';
+    }
+
   }
+
+
+
+
+
+
+
 
   findAll() {
     return `This action returns all history`;

@@ -3,22 +3,19 @@ import { useEffect, useState } from 'react'
 import { ChannelType, VideoType } from '../static/type';
 import { HiMagnifyingGlass, HiOutlineUserCircle } from 'react-icons/hi2';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router';
 import { FiTrash2 } from 'react-icons/fi';
 import { ImPlay2 } from 'react-icons/im';
 import { AiOutlinePause } from 'react-icons/ai';
-import { getUser, setUser } from '../slices/userSlice';
 import { GoHistory } from 'react-icons/go';
-import { signInWithPopup, signOut } from "firebase/auth";
+import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../firebase";
 import { getAllChannels, getCurrentChannel, setCurrentChannel } from '../slices/channelSlice';
 import { v4 as uuidv4 } from 'uuid';
 import ModalPauseHistory from '../components/ModalPauseHistory';
-import moment from 'moment';
-import VideoComp from '../components/VideoComp';
 import { Link } from 'react-router-dom';
 import VideoCompInfo from '../components/VideoCompInfo';
 import ModalDeleteHistory from '../components/ModalDeleteHistory';
+import { formatDate } from '../static/fn'
 
 interface HistoryProp {
   id: number;
@@ -26,27 +23,17 @@ interface HistoryProp {
   video: VideoType;
 }
 
-interface ResponseProp {
-  id: number;
-  view_date: string;
-  video: VideoType;
-  channel: ChannelType;
-}
 const History = () => {
   const [videos, setVideos] = useState<HistoryProp[]>([])
-  const [viewData, setViewData] = useState([])
-  const [uniqueViewDates, setUniqueViewDates] = useState<string[] | []>([])
+  const [videosFilter, setVideosFilter] = useState<HistoryProp[]>([])
   const [searchKeyword, setSearchKeyword] = useState('');
   const [openPauseModal, setOpenPauseModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  // const user = useSelector(getUser);
   const allChannels = useSelector(getAllChannels);
   const currentChannel = useSelector(getCurrentChannel);
   const [home, setHome] = useState(false);
   const [description, setDescription] = useState(true);
-
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.keyCode === 13) {
@@ -55,19 +42,18 @@ const History = () => {
   };
   const handleSearch = () => {
     if (searchKeyword.replace(/\s+/g, ' ').trim()) {
-      // dispatch(setSearchQuery(searchKeyword));
-      // navigate({
-      //   pathname: `/search`,
-      //   search: createSearchParams({
-      //     q: searchKeyword
-      //   }).toString()
-      // })
+      const keyword = searchKeyword.replace(/\s+/g, ' ').trim();
+      console.log(keyword);
+      const videoSearch = videos?.filter((item) => (item.video.title.toLowerCase().includes(keyword.toLowerCase())
+        || (item.video.channel.channelName.toLowerCase().includes(keyword.toLowerCase()))))
+      setVideosFilter(videoSearch);
     }
   };
+
   const handleAddKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
     const keyword = e.target.value;
     setSearchKeyword(keyword);
-    console.log(keyword.replace(/\s+/g, ' ').trim());
+    if (keyword === '') setVideosFilter(videos)
   };
 
   const fetchWatchedVideo = async () => {
@@ -75,18 +61,10 @@ const History = () => {
       const [videosResponse] = await Promise.all([
         axios.get(`http://localhost:5000/api/v1/history/${currentChannel?.id}`),
       ]);
-      console.log("videosResponse", videosResponse?.data);
       const videoSort = videosResponse?.data?.sort((a: HistoryProp, b: HistoryProp) =>
         new Date(b.view_date).getTime() - new Date(a.view_date).getTime());
-
-      const transformedVideos = videoSort.map((item: ResponseProp) => ({
-        id: item.id,
-        view_date: item.view_date,
-        video: { ...item.video, channel: { ...item.channel }, },
-      }));
-      console.log("transformedVideos", videoSort);
-      setVideos(videoSort)
-
+      setVideos(videoSort);
+      setVideosFilter(videoSort)
     } catch (error) {
       console.error(error);
     }
@@ -94,21 +72,6 @@ const History = () => {
   useEffect(() => {
     fetchWatchedVideo();
   }, []);
-  const formatDate = (date: string) => {
-    const viewDate = moment(date);
-    const now = moment();
-    const diffInDays = now.diff(viewDate, 'days');
-    const diffInWeeks = now.diff(viewDate, 'weeks');
-    const isThisYear = now.year() === viewDate.year();
-
-    if (diffInDays < 7) {
-      return viewDate.format('dddd');
-    } else if (diffInWeeks < 52 && isThisYear) {
-      return viewDate.format('MMM DD');
-    } else {
-      return viewDate.format('YYYY, MMM DD');
-    }
-  }
 
   const handleLogin = async () => {
     const response = await signInWithPopup(auth, provider);
@@ -174,8 +137,6 @@ const History = () => {
       console.error(error);
     }
   };
-  
-  console.log("currentChannel", currentChannel);
   // console.log("uniqueViewDates", uniqueViewDates);
   let currentDate: string | null = null;
   return (
@@ -185,7 +146,7 @@ const History = () => {
       <div className='flex'>
         {currentChannel
           ? <div className='flex basis-2/3 flex-col ml-5 mr-10'>
-            {videos.map((video) => {
+            {videosFilter.map((video) => {
               const isDifferentDate = currentDate !== video.view_date;
               currentDate = video.view_date;
               return (
@@ -200,7 +161,7 @@ const History = () => {
                       </div>
                     </Link>
                     <div className='flex flex-1 '>
-                      <VideoCompInfo video={video?.video} home={home} description={description}/>
+                      <VideoCompInfo video={video?.video} home={home} description={description} />
                     </div>
                   </div>
                 </div>
@@ -216,8 +177,7 @@ const History = () => {
             hover:bg-yt-blue-1">
               <button
                 className=" text-[#37A6FF] py-[6px] px-3 flex gap-2"
-                onClick={handleLogin}
-              >
+                onClick={handleLogin}>
                 <HiOutlineUserCircle size={24} />
                 Sign in
               </button>

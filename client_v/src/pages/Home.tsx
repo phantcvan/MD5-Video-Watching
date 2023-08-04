@@ -25,7 +25,7 @@ const Home = () => {
   const [lastPage, setLastPage] = useState(false);
   const [isChoice, setIsChoice] = useState("All");
   const allTags = useSelector(getAllTags);
-
+  const [home, setHome] = useState(true);
 
 
   // Khi không có user
@@ -201,7 +201,7 @@ const Home = () => {
             key={video.id}
           >
             <VideoComp
-              video={video}
+              video={video} home={home}
             />
           </div>
         ))}

@@ -35,6 +35,11 @@ export class VideoController {
     return this.videoService.findOne(videoCode);
   }
 
+  @Get('/videosBelongChannel/:channelId')
+  findVideobyChannelId(@Param('channelId') channelId: string) {
+    return this.videoService.findVideobyChannelId(+channelId);
+  }
+
 
   @Put('view/:videoCode')
   updateView(@Param('videoCode') videoCode: string, @Body() updateVideoDto: UpdateVideoDto) {

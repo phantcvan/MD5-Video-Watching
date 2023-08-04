@@ -6,12 +6,13 @@ import { Link } from 'react-router-dom';
 import ReactPlayer from 'react-player'
 import VideoCompInfo from './VideoCompInfo';
 interface VideoComp {
-  video: VideoType
+  video: VideoType,
+  home: boolean
 }
-const VideoComp = ({ video }: VideoComp) => {
-  const [home, setHome] = useState(true);
+const VideoComp = ({ video, home }: VideoComp) => {
   const [isHovered, setIsHovered] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [description, setDescription] = useState(false);
   const dispatch = useDispatch();
 
   // hiển thị video khi hover
@@ -65,7 +66,7 @@ const VideoComp = ({ video }: VideoComp) => {
           )}
         </div>
       </Link>
-      <VideoCompInfo video={video} home={home}/>
+      <VideoCompInfo video={video} home={home} description={description} />
 
     </div>
   )

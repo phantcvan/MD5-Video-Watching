@@ -10,6 +10,7 @@ import "../index.css"
 import VideoDescribe from '../components/Video/VideoDescribe';
 import VideoCmt from '../components/Video/VideoCmt';
 import Recommend from '../components/Video/Recommend';
+import { getCurrentChannel } from '../slices/channelSlice';
 
 
 const Video = () => {
@@ -17,17 +18,32 @@ const Video = () => {
   const [video, setVideo] = useState<VideoType | null>(null);
   const curWid = useSelector(getCurrentWidth)
   const [tags, setTags] = useState<AllTags[]>([])
-  const [forKid, setForKid] = useState(false)
+  const [forKid, setForKid] = useState(false);
+  const currentChannel = useSelector(getCurrentChannel)
 
 
 
-  const updateView = async (view: number) => {
+  const updateView = async (view: number, videoId: number) => {
     try {
       const updatedViews = view + 1;
-      const response = await axios.put(
-        `http://localhost:5000/api/v1/videos/view/${videoCode}`,
-        { views: updatedViews }
-      );
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${day}`;
+      console.log(formattedDate);
+      const newHistory = {
+        channelId: currentChannel?.id,
+        videoId: videoId,
+        view_date: formattedDate
+      }
+      const [response, historyResponse,] = await Promise.all([
+        axios.put(`http://localhost:5000/api/v1/videos/view/${videoCode}`,
+          { views: updatedViews }
+        ),
+        axios.post(`http://localhost:5000/api/v1/history`, newHistory),
+      ]);
+
 
     } catch (error) {
       console.log(error);
@@ -51,7 +67,7 @@ const Video = () => {
 
       setVideo(videoResponse?.data);
       // setComments(commentsResponse?.data.findCmt);
-      updateView(videoResponse?.data.views);
+      updateView(videoResponse?.data.views, videoResponse?.data?.id);
       // setSubscribes(subscribesResponse?.data.subscribes);
       // console.log("actionsResponse", actionsResponse?.data.actions);
       // setCountLike(
@@ -117,7 +133,7 @@ const Video = () => {
         <VideoDescribe video={video} tags={tags} />
         <VideoCmt video={video} forKid={forKid} />
       </div>
-      <Recommend tags={tags}/>
+      <Recommend tags={tags} />
     </div >
   )
 }

@@ -31,9 +31,8 @@ const Public = () => {
         const [authResponse] = await Promise.all([
           axios.post(`http://localhost:5000/api/v1/auth/signIn`, response?.data),
         ]);
-        console.log("authResponse 2", authResponse?.data?.access_token);
         const jwtToken = authResponse?.data?.access_token;
-        const expiresInDays = 7; // Số ngày tồn tại của cookies
+        const expiresInDays = 7; 
         const expirationDate = new Date();
         expirationDate.setDate(expirationDate.getDate() + expiresInDays);
         const cookieString = `access_token=${jwtToken}; expires=${expirationDate.toUTCString()}; path=/; SameSite=Lax`;
@@ -46,6 +45,7 @@ const Public = () => {
       return false;
     }
   }
+
   useEffect(() => {
     const cookieArray = allCookies.split(';');
     let accessToken = '';

@@ -2,6 +2,7 @@ import { CreateChannelDto } from './../dto/create-channel.dto';
 import { History } from '../../history/entities/history.entity';
 import { Video } from '../../video/entities/video.entity';
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Reaction } from 'src/reaction/entities/reaction.entity';
 
 @Entity()
 export class Channel {
@@ -31,6 +32,9 @@ export class Channel {
 
   @CreateDateColumn({ type: 'datetime' })
   joinDate: Date;
+
+  @OneToMany(() => Reaction, (reaction) => reaction.channel)
+  reaction: Reaction[]
 
   @OneToMany(() => Video, (video) => video.channel)
   videos: Video[]

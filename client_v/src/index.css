@@ -51,8 +51,15 @@ code {
   background-color: transparent;
   overflow-x: auto;
 }
-/* 
-.hide-scrollbar-x:hover::-webkit-scrollbar {
-  height: 4px;
-  background-color: #0f0f0f;
-} */
+.bg_liked {
+  background: #181816;
+  background: -moz-linear-gradient(top, #181816 0%, #cbcac9 53%, #ffffff 100%);
+  background: -webkit-linear-gradient(
+    top,
+    #181816 0%,
+    #cbcac9 53%,
+    #ffffff 100%
+  );
+  background: linear-gradient(to bottom, #181816 0%, #cbcac9 53%, #ffffff 100%);
+}
+

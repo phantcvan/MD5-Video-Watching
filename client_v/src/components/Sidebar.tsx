@@ -6,7 +6,7 @@ import { setUser, getUser } from "../slices/userSlice";
 import { signInWithPopup, signOut } from "firebase/auth";
 import { auth, provider } from "../firebase";
 import { useDispatch, useSelector } from "react-redux";
-import { AiFillChrome, AiFillHome, AiOutlineMenu, AiOutlinePlaySquare } from "react-icons/ai";
+import { AiFillChrome, AiFillHome, AiOutlineLike, AiOutlineMenu, AiOutlinePlaySquare } from "react-icons/ai";
 import { MdOutlineSubscriptions, MdVideoLibrary } from "react-icons/md";
 import { BiLike } from "react-icons/bi";
 import { HiOutlineFire, HiOutlineUserCircle } from "react-icons/hi2";
@@ -33,7 +33,7 @@ const Sidebar = ({ }) => {
   const [active, setActive] = useState("Home");
   const dispatch = useDispatch();
   const currentChannel = useSelector(getCurrentChannel);
-  const myChannelId = 123;
+  const myChannelId = currentChannel?.channelCode;
   const allChannels = useSelector(getAllChannels);
   // const channelsSub = useSelector(getChannelsSub);
   // let SideBarItems: SideBarType;
@@ -164,18 +164,32 @@ const Sidebar = ({ }) => {
               <p className="p-2 text-sm font-medium">History</p>
             </div>
           </Link>
-          {!currentChannel
-            && <Link to={`/channel/${myChannelId}`}>
-              <div
-                className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer hover:bg-yt-light-black
+          {currentChannel
+            && <div>
+              <Link to={`/channel/${myChannelId}`}>
+                <div
+                  className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer hover:bg-yt-light-black
              my-1 ${active === "Channel" ? "bg-yt-light-black" : "bg-yt-black"
-                  }`}
-                onClick={() => { setActive("Channel"); dispatch(setShowMenu(false)) }}
-              >
-                <span className="mr-5 my-1"><RiVideoFill size={21} /></span>
-                <p className="p-2 text-sm font-medium">Your Videos</p>
-              </div>
-            </Link>
+                    }`}
+                  onClick={() => { setActive("Channel"); dispatch(setShowMenu(false)) }}
+                >
+                  <span className="mr-5 my-1"><RiVideoFill size={21} /></span>
+                  <p className="p-2 text-sm font-medium">Your Videos</p>
+                </div>
+              </Link>
+              <Link to={`/likedVideos`}>
+                <div
+                  className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer hover:bg-yt-light-black
+             my-1 ${active === "Liked" ? "bg-yt-light-black" : "bg-yt-black"
+                    }`}
+                  onClick={() => { setActive("Liked"); dispatch(setShowMenu(false)) }}
+                >
+                  <span className="mr-5 my-1"><AiOutlineLike size={21} /></span>
+                  <p className="p-2 text-sm font-medium">Liked videos</p>
+                </div>
+              </Link>
+
+            </div>
           }
           <hr className="text-yt-light-black my-2" />
 
@@ -239,7 +253,7 @@ const Sidebar = ({ }) => {
 
           </div>
         </div>} */}
-        <hr className="text-yt-light-black" />
+        {/* <hr className="text-yt-light-black" /> */}
         <div className="flex flex-wrap">
           {CategoryItems.map((item, index) => {
             return (

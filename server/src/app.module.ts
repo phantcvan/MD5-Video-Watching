@@ -13,6 +13,8 @@ import { Comment } from './comment/entities/comment.entity';
 import { HistoryModule } from './history/history.module';
 import { History } from './history/entities/history.entity';
 import { AuthModule } from './auth/auth.module';
+import { ReactionModule } from './reaction/reaction.module';
+import { Reaction } from './reaction/entities/reaction.entity';
 
 @Module({
   imports: [
@@ -30,7 +32,7 @@ import { AuthModule } from './auth/auth.module';
         synchronize: configService.get<boolean>('DATABASE_SYNC'),
         logging: configService.get<boolean>('DATABASE_LOGGING'),
         // entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        entities: [Channel, Video, Tag, Comment, History],
+        entities: [Channel, Video, Tag, Comment, History, Reaction],
       }),
     }),
     ChannelModule,
@@ -39,6 +41,7 @@ import { AuthModule } from './auth/auth.module';
     CommentModule,
     HistoryModule,
     AuthModule,
+    ReactionModule,
   ],
 })
 export class AppModule { }

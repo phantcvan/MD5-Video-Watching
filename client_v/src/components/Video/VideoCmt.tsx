@@ -117,7 +117,7 @@ const VideoCmt = ({ video, forKid }: VideoComp) => {
               className="flex w-full pt-4 items-start"
             >
               <img
-                src={currentChannel?.logoURL}
+                src={currentChannel?.logoUrl}
                 alt="profile"
                 className="rounded-full mr-3 h-12 w-12"
               />
