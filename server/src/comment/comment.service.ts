@@ -5,14 +5,38 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entities/comment.entity';
 import { Repository } from 'typeorm';
 import { Video } from '../video/entities/video.entity';
+import { Channel } from 'src/channel/entities/channel.entity';
 
 @Injectable()
 export class CommentService {
-  constructor(@InjectRepository(Comment) private CmtRepo: Repository<Comment>,
-    @InjectRepository(Video) private VideoRepo: Repository<Video>,
+  constructor(@InjectRepository(Comment) private cmtRepo: Repository<Comment>,
+    @InjectRepository(Video) private videoRepo: Repository<Video>,
+    @InjectRepository(Channel) private channelRepo: Repository<Channel>,
   ) { }
-  create(createCommentDto: CreateCommentDto) {
-    return 'This action adds a new comment';
+  async create(createCommentDto: CreateCommentDto) {
+    const { channel, videoId, content, cmt_date, level, cmt_reply } = createCommentDto;
+    // console.log("videoId", videoId);
+    const findChannel = await this.channelRepo.findOne({
+      where: { email: channel }
+    })
+    const findVideo = await this.videoRepo.findOne({
+      where: { id: videoId }
+    })
+    if (findChannel && findVideo) {
+      const newCmt = {
+        channel,
+        content,
+        cmt_date,
+        video: findVideo,
+        level,
+        cmt_reply
+      }
+      // console.log("newCmt", newCmt);
+      return this.cmtRepo.save(newCmt)
+    } else {
+      throw new Error('Channel or Video not found');
+    }
+
   }
 
   findAll() {
@@ -23,9 +47,9 @@ export class CommentService {
     return `This action returns a #${id} comment`;
   }
 
-async findAllCmtBelongVideo(videoId: number): Promise<Comment[]> {
-  return this.CmtRepo.find({ where: { video: { id: videoId } } });
-}
+  async findAllCmtBelongVideo(videoId: number): Promise<Comment[]> {
+    return this.cmtRepo.find({ where: { video: { id: videoId } } });
+  }
 
   update(id: number, updateCommentDto: UpdateCommentDto) {
     return `This action updates a #${id} comment`;

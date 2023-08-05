@@ -16,6 +16,7 @@ import { getAllChannels, getCurrentChannel, setCurrentChannel } from '../slices/
 import { ChannelType } from '../static/type';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import { getCurrentDate } from '../static/fn';
 // import { handleAddChannel } from "../static/handleAddChannel";
 
 
@@ -84,11 +85,7 @@ const Navbar = () => {
 
 
       if (findChannelIndex === -1) {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, "0");
-        const day = String(today.getDate()).padStart(2, "0");
-        const formattedDate = `${year}-${month}-${day}`;
+        const formattedDate = getCurrentDate();
         const newCode = uuidv4()
         const newChannel = {
           email: user?.email,

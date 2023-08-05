@@ -1,6 +1,6 @@
 import { type } from 'os';
 import { Video } from '../../video/entities/video.entity';
-import { Column, CreateDateColumn, Entity, JoinTable, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Comment {
@@ -10,7 +10,7 @@ export class Comment {
   @Column()
   channel: string;
 
-  @Column()
+  @Column({ type: "longtext" })
   content: string;
 
   @Column()
@@ -23,5 +23,6 @@ export class Comment {
   cmt_date: string;
 
   @ManyToOne(() => Video, (video) => video.cmts, { onDelete: "CASCADE" })
+  @JoinColumn({ name: 'videoId' })
   video: Video
 }

@@ -14,6 +14,7 @@ export default {
       "yt-light-4": "#AAAAAA",
       "yt-light-5": "#939393",
       "yt-light-6": "#4D4D4D",
+      "yt-blue": "#3CA0F5",
       "yt-blue-1": "#263850",
       "yt-blue-2": "#3EA6FF",
       "yt-gray": "gray",

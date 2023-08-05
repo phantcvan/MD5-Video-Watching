@@ -15,7 +15,7 @@ import ModalPauseHistory from '../components/ModalPauseHistory';
 import { Link } from 'react-router-dom';
 import VideoCompInfo from '../components/VideoCompInfo';
 import ModalDeleteHistory from '../components/ModalDeleteHistory';
-import { formatDate } from '../static/fn'
+import { formatDate, getCurrentDate } from '../static/fn'
 
 interface HistoryProp {
   id: number;
@@ -87,11 +87,7 @@ const History = () => {
 
 
       if (findChannelIndex === -1) {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, "0");
-        const day = String(today.getDate()).padStart(2, "0");
-        const formattedDate = `${year}-${month}-${day}`;
+        const formattedDate = getCurrentDate();
         const newCode = uuidv4()
         const newChannel = {
           email: user?.email,

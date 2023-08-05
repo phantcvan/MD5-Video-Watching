@@ -11,6 +11,7 @@ import VideoDescribe from '../components/Video/VideoDescribe';
 import VideoCmt from '../components/Video/VideoCmt';
 import Recommend from '../components/Video/Recommend';
 import { getCurrentChannel } from '../slices/channelSlice';
+import { getCurrentDate } from '../static/fn';
 
 
 const Video = () => {
@@ -26,11 +27,7 @@ const Video = () => {
   const updateView = async (view: number, videoId: number) => {
     try {
       const updatedViews = view + 1;
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, "0");
-      const day = String(today.getDate()).padStart(2, "0");
-      const formattedDate = `${year}-${month}-${day}`;
+      const formattedDate = getCurrentDate();
       console.log(formattedDate);
       const newHistory = {
         channelId: currentChannel?.id,
@@ -96,7 +93,10 @@ const Video = () => {
         const [tagsResponse,] = await Promise.all([
           axios.get(`http://localhost:5000/api/v1/tag/tagForVideo/${videoResponse?.data?.id}`),
         ]);
-        // console.log("tagsResponse", tagsResponse?.data);
+        const isForKid = tagsResponse?.data.find((tag: AllTags) => tag.tag === 'kid')
+        console.log("tagsResponse", isForKid);
+        if (isForKid) setForKid(true)
+        else setForKid(false)
         setTags(tagsResponse?.data);
       } catch (error) {
 

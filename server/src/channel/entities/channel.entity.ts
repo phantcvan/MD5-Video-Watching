@@ -41,6 +41,7 @@ export class Channel {
 
   @OneToMany(() => History, (history) => history.channel)
   history: History[]
+
 }
 
 

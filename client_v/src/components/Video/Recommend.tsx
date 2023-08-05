@@ -124,7 +124,7 @@ const Recommend = ({ tags }: RecommendProp) => {
     }
   }, [isChoice, allVideos, videoCode]);
 
-  console.log(isChoice);
+  // console.log(isChoice);
   const handleScroll = () => {
     const scrollTop = Math.max(
       document.documentElement.scrollTop,

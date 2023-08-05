@@ -21,6 +21,7 @@ import { RiVideoFill } from "react-icons/ri";
 import "../index.css";
 import { v4 as uuidv4 } from 'uuid';
 import axios from "axios";
+import { getCurrentDate } from "../static/fn";
 
 interface SidebarItem {
   icon: React.ReactNode;
@@ -54,11 +55,7 @@ const Sidebar = ({ }) => {
       // console.log("findChannelIndex", findChannelIndex);
 
       if (findChannelIndex === -1) {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, "0");
-        const day = String(today.getDate()).padStart(2, "0");
-        const formattedDate = `${year}-${month}-${day}`;
+        const formattedDate = getCurrentDate();
         const newCode = uuidv4()
         const newChannel = {
           email: user?.email,
