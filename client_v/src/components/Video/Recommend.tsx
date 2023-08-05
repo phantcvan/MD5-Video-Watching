@@ -19,6 +19,7 @@ const Recommend = ({ tags }: RecommendProp) => {
   const [loading, setLoading] = useState(false);
   const [lastPage, setLastPage] = useState(false);
   const [home, setHome] = useState(false);
+  const [description, setDescription] = useState(false);
   const [start, setStart] = useState(1);
   const [videosTag, setVideosTag] = useState<VideoType[]>([]);
   const dispatch = useDispatch();
@@ -156,7 +157,7 @@ const Recommend = ({ tags }: RecommendProp) => {
             </div>
           </Link>
           <div className='flex flex-1 '>
-            <VideoCompInfo video={video} home={home} />
+            <VideoCompInfo video={video} home={home} description={description}/>
           </div>
         </div>
       ))}

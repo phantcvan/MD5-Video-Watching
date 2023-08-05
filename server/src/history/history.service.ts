@@ -23,7 +23,7 @@ export class HistoryService {
     const channel = await this.channelRepository.findOne({ where: { id: +channelId } });
     const video = await this.videoRepository.findOne({ where: { id: +videoId } });
     if (!channel || !video) {
-      throw new Error('Channel or Video not found'); // Xử lý trường hợp không tìm thấy Channel hoặc Video
+      throw new Error('Channel or Video not found');
     }
 
     const find = await this.historyRepository.findOne({
@@ -33,17 +33,19 @@ export class HistoryService {
         view_date: view_date,
       },
     });
+    const newHistory = {
+      channel: channel,
+      view_date,
+      video: video,
+    };
     if (!find && channel?.recordHistory === 1) {
-      const newHistory = {
-        channel: channel,
-        view_date,
-        video: video,
-      };
+      return this.historyRepository.save(newHistory);
+    } else if (find && channel?.recordHistory === 1) {
+      await this.historyRepository.remove(find);
       return this.historyRepository.save(newHistory);
     } else {
-      return 'History already exists';
+      return "This channel don't turn on watch history.";
     }
-
   }
 
 

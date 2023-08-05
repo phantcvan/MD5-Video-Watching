@@ -6,13 +6,15 @@ import { VideoType } from "../static/type";
 import { Link } from "react-router-dom";
 import ReactPlayer from "react-player";
 import '../index.css'
+import VideoCompInfo from "../components/VideoCompInfo";
 
 
 const Liked = () => {
   const currentChannel = useSelector(getCurrentChannel)
   const [videosLiked, setVideosLiked] = useState<VideoType[]>([]);
   const [finalVideo, setFinalVideo] = useState<VideoType | null>(null);
-
+  const [home, setHome] = useState(false);
+  const [description, setDescription] = useState(false);
 
 
   const fetchLikedVideo = async () => {
@@ -33,17 +35,21 @@ const Liked = () => {
     fetchLikedVideo();
   }, []);
   const backgroundStyle = {
-    backgroundImage: `linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 30%, rgba(0, 0, 0, 1)),
-     url(${finalVideo?.thumbnail})`,
+    backgroundImage: `linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 1)), url(${finalVideo?.thumbnail})`,
+    backgroundRepeat: 'no-repeat', // Ảnh không lặp lại
+    backgroundSize: '100% auto',   // Hiển thị độ rộng bằng với độ rộng của khối div và tỷ lệ cao tự động
+    backgroundPosition: 'center',  // Căn giữa ảnh
   };
+  
 
 
   return (
     <div className={`max-w-full min-h-screen h-[calc(100%-53px)] mt-[53px] bg-yt-black flex z-0 flex-col ml-[18px]
     sm:px-6 md:px-7 lg:px-8 xl:px-9`}>
       {videosLiked.length > 0 ? (
-        <div className="flex gap-3 mt-3">
-          <div className="flex flex-col w-[40%] p-3 rounded-lg bg_like overflow-hidden" style={backgroundStyle}>
+        <div className="flex gap-4 mt-3 relative">
+          <div className="flex flex-col w-[40%] p-3 rounded-lg bg_like overflow-hidden fixed top-20"
+            style={backgroundStyle}>
             <div className="w-full aspect-video p-3 rounded-lg">
               <Link to={`/video/${finalVideo?.videoCode}`}>
                 <ReactPlayer
@@ -62,22 +68,27 @@ const Liked = () => {
               {videosLiked?.length} videos
             </span>
           </div>
-          <div className="flex flex-1 overflow-y-auto">
-          <div className="pt-3 ">
-                {videosLiked?.map((video, i) => {
-                  if (video?.id !== finalVideo?.id) {
-                    return (
-                      <Link key={i} to={`/video/${video.id}`}>
-                        {/* <RecommendVideo
-                          {...video}
-                          allChannels={allChannels}
-                          id={video?.id}
-                        /> */}
+          <div className="flex flex-1 overflow-y-auto ml-[520px]">
+            <div className="pt-3 ">
+              {videosLiked?.slice(1).map((video, i) => (
+                <div className="hover:bg-yt-light-3 px-3 py-[1px] rounded-md">
+                <Link key={i} to={`/video/${video.videoCode}`}>
+                    <div className='flex justify-between items-start my-3 gap-1 hide-scrollbar-x' key={video?.id}>
+                      <Link to={`/video/${video?.videoCode}`}>
+                        <div className='w-[168px] aspect-video rounded-md cursor-pointer'>
+                          <img src={video.thumbnail}
+                            alt=""
+                            className={`w-[100%] object-cover aspect-video rounded-md`} />
+                        </div>
                       </Link>
-                    );
-                  }
-                })}
-              </div>
+                      <div className='flex flex-1 '>
+                        <VideoCompInfo video={video} home={home} description={description} />
+                      </div>
+                    </div>
+                </Link>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ) : currentChannel ? (

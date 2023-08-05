@@ -62,7 +62,7 @@ const History = () => {
         axios.get(`http://localhost:5000/api/v1/history/${currentChannel?.id}`),
       ]);
       const videoSort = videosResponse?.data?.sort((a: HistoryProp, b: HistoryProp) =>
-        new Date(b.view_date).getTime() - new Date(a.view_date).getTime());
+        (b.id) - (a.id));
       setVideos(videoSort);
       setVideosFilter(videoSort)
     } catch (error) {
