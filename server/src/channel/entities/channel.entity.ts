@@ -1,8 +1,9 @@
 import { CreateChannelDto } from './../dto/create-channel.dto';
 import { History } from '../../history/entities/history.entity';
 import { Video } from '../../video/entities/video.entity';
-import { Column, CreateDateColumn, Entity, JoinTable, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Reaction } from 'src/reaction/entities/reaction.entity';
+import { Subscribe } from 'src/subscribe/entities/subscribe.entity';
 
 @Entity()
 export class Channel {
@@ -42,6 +43,13 @@ export class Channel {
   @OneToMany(() => History, (history) => history.channel)
   history: History[]
 
+  @ManyToMany(() => Subscribe, subscribe => subscribe.channels)
+  @JoinTable({
+    name: 'subscribe_channel',
+    joinColumns: [{ name: 'subscribed_id', referencedColumnName: 'id' }],
+    inverseJoinColumns: [{ name: 'subscriber_id', referencedColumnName: 'id' }],
+  })
+  subscribers: Subscribe[];
 }
 
 

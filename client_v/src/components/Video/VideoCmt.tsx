@@ -11,7 +11,7 @@ import { getAllChannels, getCurrentChannel, setCurrentChannel } from "../../slic
 import { notification } from "antd";
 import { getCurrentDate } from '../../static/fn';
 import { v4 as uuidv4 } from 'uuid';
-import { IoIosArrowDown } from "react-icons/io";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 
 interface VideoComp {
@@ -236,20 +236,18 @@ const VideoCmt = ({ video, forKid }: VideoComp) => {
                     {numLevel2Comments > 0 && (
                       <div className="w-full ml-14 mt-[-6px]">
                         <div className="flex flex-col">
-                          <div className="flex items-center gap-3">
-                            <span
-                              className="cursor-pointer hover:bg-yt-blue-1 text-yt-blue p-2 rounded-full"
-                              onClick={() => setShowCmtL2(pre => !pre)}
-                            >
-                              <IoIosArrowDown size={24} />
+                          <div
+                            className="cursor-pointer hover:bg-yt-blue-1 text-yt-blue py-2 rounded-r-full
+                            gap-2 flex rounded-l-full w-fit px-3"
+                            onClick={() => setShowCmtL2(pre => !pre)}
+                          > <span>
+                              {showCmtL2 ? <IoIosArrowUp size={24} /> : <IoIosArrowDown size={24} />}
                             </span>
-                            <span
-                              className="cursor-pointer hover:bg-yt-blue-1 text-yt-blue py-2 px-3 rounded-l-full rounded-r-full"
-                              onClick={() => setShowCmtL2(pre => !pre)}
-                            >
+                            <span>
                               {numLevel2Comments} {numLevel2Comments > 1 ? 'replies' : 'reply'}
                             </span>
                           </div>
+
                           {showCmtL2 && level2Comments.map((cmt2, index) => (
                             <div className="w-full" key={index}>
                               <Comment item={cmt2} video={video} setCommented={setCommented} handleLogin={handleLogin} />

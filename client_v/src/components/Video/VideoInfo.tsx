@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
-import { VideoType } from '../../static/type'
+import { ChannelType, VideoType } from '../../static/type'
 import { useSelector } from 'react-redux';
 import { getUser } from '../../slices/userSlice';
 import VideoAction from './VideoAction';
 import { MdVerified } from 'react-icons/md';
 import { FaRegBell } from "react-icons/fa";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getCurrentChannel } from '../../slices/channelSlice';
+import axios from 'axios';
 
 
 interface VideoComp {
@@ -15,11 +16,31 @@ interface VideoComp {
 const VideoInfo = ({ video }: VideoComp) => {
   const currentChannel = useSelector(getCurrentChannel);
   const [isSubscribe, setIsSubscribe] = useState(false);
+  const [subscribedCount, setSubscribedCount] = useState(0);
   let userEmail = ""
   if (currentChannel) userEmail = currentChannel.email
   const handleAddSubscribe = () => {
 
   }
+  const fetchSubData = async () => {
+    try {
+      const [subscribeResponse] = await Promise.all([
+        axios.get(`http://localhost:5000/api/v1/subscribe/subscribed/${video?.channel?.id}`)
+
+      ])
+      // console.log("subscribeResponse", subscribeResponse?.data);
+      setSubscribedCount(subscribeResponse?.data?.length)
+      const checkSubscribed = subscribeResponse?.data.filter((channel: ChannelType) => channel.id === currentChannel?.id)
+      console.log(checkSubscribed);
+      if (checkSubscribed.length > 0) setIsSubscribe(true)
+      else setIsSubscribe(false)
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  useEffect(() => {
+    fetchSubData()
+  }, [video])
 
   return (
     <div className="flex items-center justify-between w-[100%] mt-1">
@@ -43,7 +64,7 @@ const VideoInfo = ({ video }: VideoComp) => {
                 </span>
               </div>
               <span className='text-yt-light-5 text-sm'>
-                subscribers
+                {subscribedCount} subscribers
               </span>
             </div>
           </Link>

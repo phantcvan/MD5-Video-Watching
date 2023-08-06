@@ -109,7 +109,7 @@ const Video = () => {
   useEffect(() => {
     fetchDataChangeId();
   }, [videoCode]);
-  console.log("tags", tags);
+  // console.log("tags", tags);
 
 
   return (

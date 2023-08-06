@@ -22,7 +22,7 @@ const Comment = ({ item, video, setCommented, handleLogin }: CommentProp) => {
   const [commentInput, setCommentInput] = useState("");
   const [existCmt, setExistCmt] = useState(false);
 
-  console.log("item", item);
+  // console.log("item", item);
 
   const channelName = item?.channel.split("@")[0];
   const fetchChannelCmtData = async () => {
@@ -75,9 +75,9 @@ const Comment = ({ item, video, setCommented, handleLogin }: CommentProp) => {
 
   return (
     <div className="flex flex-row my-2 items-start">
-      <img src={channelCmt?.logoUrl} alt="profile" 
-      className={`rounded-full mr-3 ${item?.level === 1 ? "h-12 w-12" : "h-7 w-7"}`} />
-      <div>
+      <img src={channelCmt?.logoUrl} alt="profile"
+        className={`rounded-full mr-3 ${item?.level === 1 ? "h-12 w-12" : "h-7 w-7"}`} />
+      <div className="w-full">
         <div className="flex items-center my-2">
           <p className="text-sm font-medium pr-2">@{channelName}</p>
           <p className="text-xs text-yt-gray">
@@ -96,8 +96,8 @@ const Comment = ({ item, video, setCommented, handleLogin }: CommentProp) => {
             </div>
           </div>
           <p className="text-sm py-2 px-4 hover:bg-yt-light-2 rounded-l-full rounded-r-full cursor-pointer"
-            onClick={() => setCmtReply(true)}>
-            Reply
+            onClick={() => setCmtReply(pre=>!pre)}>
+            {item.cmt_reply > 0 ? '' : 'Reply'}
           </p>
         </div>
         {cmtReply && (currentChannel ? (
@@ -115,7 +115,8 @@ const Comment = ({ item, video, setCommented, handleLogin }: CommentProp) => {
               onChange={handleInputChange}
               type="text"
               placeholder="Add a reply..."
-              className="bg-[transparent] border-b border-b-yt-light-black outline-none text-sm p-1 w-full"
+              className="bg-[transparent] border-b border-b-yt-light-black outline-none text-sm p-1
+               w-full"
             />
             <button
               className={`ml-1 p-2 rounded-r-full rounded-l-full
