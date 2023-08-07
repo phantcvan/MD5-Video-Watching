@@ -92,17 +92,15 @@ const Public = () => {
     }
   }
 
-
-
-
   return (
     <div className='mt-2 overflow-y-auto'>
       <Navbar />
       <div className='flex flex-row h-full w-full bg-yt-black pb-3'>
-        {curWidth >= 786 && <div className='flex flex-1'>
+        {curWidth >= 786 && 
+        <div className='flex flex-1'>
           <MiniSidebar />
         </div>}
-        <div className='flex sm:basis-[82%] md:basis-[90%] lg:basis-[95%] overflow-x-auto hide-scrollbar-x'>
+        <div className='flex sm:w-[80%] md:w-[88%] lg:w-[92%] mr-5'>
           <Outlet />
         </div>
         {showMenu && <Sidebar />}

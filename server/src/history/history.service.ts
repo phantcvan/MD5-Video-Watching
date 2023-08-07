@@ -18,35 +18,55 @@ export class HistoryService {
     private videoService: VideoService,
   ) { }
 
+
   async create(createHistoryDto: CreateHistoryDto) {
     const { channelId, videoId, view_date } = createHistoryDto;
-    const channel = await this.channelRepository.findOne({ where: { id: +channelId } });
-    const video = await this.videoRepository.findOne({ where: { id: +videoId } });
+    // console.log(channelId);
+
+    const channel = await this.channelRepository.findOne({ where: { id: channelId } });
+    const video = await this.videoRepository.findOne({ where: { id: videoId } });
     if (!channel || !video) {
       throw new Error('Channel or Video not found');
     }
 
-    const find = await this.historyRepository.findOne({
+    const existingHistory = await this.historyRepository.findOne({
       where: {
-        channel: { id: +channelId },
-        video: { id: +videoId },
-        view_date: view_date,
+        channel: { id: channelId },
+        video: { id: videoId },
       },
+      order: { view_date: 'DESC' },
     });
+
     const newHistory = {
       channel: channel,
       view_date,
       video: video,
     };
-    if (!find && channel?.recordHistory === 1) {
+
+    if (!existingHistory && channel?.recordHistory === 1) {
       return this.historyRepository.save(newHistory);
-    } else if (find && channel?.recordHistory === 1) {
-      await this.historyRepository.remove(find);
-      return this.historyRepository.save(newHistory);
-    } else {
-      return "This channel don't turn on watch history.";
+    } else if (existingHistory) {
+      const existingDate = new Date(existingHistory.view_date);
+      const newDate = new Date(view_date);
+      function isSameDate(date1: Date, date2: Date): boolean {
+        return (
+          date1.getFullYear() === date2.getFullYear() &&
+          date1.getMonth() === date2.getMonth() &&
+          date1.getDate() === date2.getDate()
+        );
+      }
+      if (isSameDate(existingDate, newDate) && channel?.recordHistory === 1) {
+        await this.historyRepository.remove(existingHistory); // Xoá dữ liệu cũ
+        return this.historyRepository.save(newHistory);
+      }
+
+      // if (channel?.recordHistory === 1) {
+      // }
     }
+
+    return "This channel doesn't have watch history turned on.";
   }
+
 
 
 
@@ -60,6 +80,7 @@ export class HistoryService {
   }
 
   async findBelongChannel(channelId: number) {
+    // console.log("channelId", channelId);
     const histories = await this.historyRepository.find({
       where: { channel: { id: channelId } },
       relations: ['video'],
@@ -77,6 +98,13 @@ export class HistoryService {
       };
       videoData.push(historyData);
     }));
+    // const uniqueHistory = [];
+    // videoData.forEach((video) => {
+    //   if (!uniqueHistory.some((uniqueVideo) => uniqueVideo.video.id === video.video.id)) {
+    //     uniqueHistory.push(video);
+    //   }
+    // });
+
 
     return videoData;
   }

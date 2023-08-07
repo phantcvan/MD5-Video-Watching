@@ -19,9 +19,19 @@ export class VideoController {
   findAll(@Param('start') start: string): Promise<any> {
     return this.videoService.findAll(start);
   }
+
+  @Get('allByTag/:start')
+  findAllByTag(@Param('start') start: string, @Query('tags') tags: string): Promise<any> {
+    const parsedTags = JSON.parse(tags);
+    return this.videoService.findAllByTag(start, parsedTags);
+  }
   @Get('new')
   findNewVideo(): Promise<any> {
     return this.videoService.findNewVideo();
+  }
+  @Get('newest/:channelId')
+  getLatestVideoWithChannelInfo(@Param('channelId') channelId: string): Promise<any> {
+    return this.videoService.getLatestVideoWithChannelInfo(+channelId);
   }
 
   @Get('assets/:imageName')

@@ -47,7 +47,7 @@ const VideoCompInfo = ({ video, home, description }: VideoComp) => {
 
           <Link to={`/video/${video?.videoCode}`}>
             <h2
-              className={`font-medium text-yt-white mt-0 mb-0 items-center text-justify text-sm`}
+              className={`font-medium text-yt-white mt-0 mb-0 items-center text-justify text-[16px]`}
             >
               {video?.title?.length <= Number(titleMaxLength)
                 ? video?.title

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getAllChannels, getCurrentChannel } from "../slices/channelSlice";
 import { useEffect, useState } from "react";
 import { VideoType } from "../static/type";
@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import ReactPlayer from "react-player";
 import '../index.css'
 import VideoCompInfo from "../components/VideoCompInfo";
+import { setPickSidebar } from "../slices/appSlice";
 
 
 const Liked = () => {
@@ -15,6 +16,7 @@ const Liked = () => {
   const [finalVideo, setFinalVideo] = useState<VideoType | null>(null);
   const [home, setHome] = useState(false);
   const [description, setDescription] = useState(false);
+  const dispatch = useDispatch();
 
 
   const fetchLikedVideo = async () => {
@@ -32,6 +34,7 @@ const Liked = () => {
     }
   };
   useEffect(() => {
+    dispatch(setPickSidebar("Liked"))
     fetchLikedVideo();
   }, []);
   const backgroundStyle = {
@@ -40,7 +43,7 @@ const Liked = () => {
     backgroundSize: '100% auto',   // Hiển thị độ rộng bằng với độ rộng của khối div và tỷ lệ cao tự động
     backgroundPosition: 'center',  // Căn giữa ảnh
   };
-  
+
 
 
   return (
@@ -72,7 +75,7 @@ const Liked = () => {
             <div className="pt-3 ">
               {videosLiked?.slice(1).map((video, i) => (
                 <div className="hover:bg-yt-light-3 px-3 py-[1px] rounded-md">
-                <Link key={i} to={`/video/${video.videoCode}`}>
+                  <Link key={i} to={`/video/${video.videoCode}`}>
                     <div className='flex justify-between items-start my-3 gap-1 hide-scrollbar-x' key={video?.id}>
                       <Link to={`/video/${video?.videoCode}`}>
                         <div className='w-[168px] aspect-video rounded-md cursor-pointer'>
@@ -85,7 +88,7 @@ const Liked = () => {
                         <VideoCompInfo video={video} home={home} description={description} />
                       </div>
                     </div>
-                </Link>
+                  </Link>
                 </div>
               ))}
             </div>

@@ -38,6 +38,10 @@ export class CreateChannelDto {
   channelCode: string;
 
   @ApiProperty()
+  @IsOptional()
+  about: string;
+
+  @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
   @Type(() => Number)

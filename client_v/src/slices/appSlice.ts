@@ -4,6 +4,7 @@ const initialState = {
   showMenu: false,
   showLogIn: false,
   currentWidth: null,
+  pickSidebar: 'Home',
 };
 
 export const appSlice = createSlice({
@@ -19,13 +20,17 @@ export const appSlice = createSlice({
     setCurrentWidth: (state, action) => {
       state.currentWidth = action.payload;
     },
+    setPickSidebar: (state, action) => {
+      state.pickSidebar = action.payload;
+    },
   },
 });
 
-export const { setShowMenu, setShowLogIn, setCurrentWidth } = appSlice.actions;
+export const { setShowMenu, setShowLogIn, setCurrentWidth, setPickSidebar } = appSlice.actions;
 
 export const getShowMenu = (state: any) => state.app.showMenu;
 export const getShowLogIn = (state: any) => state.app.showLogIn;
 export const getCurrentWidth = (state: any) => state.app.currentWidth;
+export const getPickSidebar = (state: any) => state.app.pickSidebar;
 
 export default appSlice.reducer;

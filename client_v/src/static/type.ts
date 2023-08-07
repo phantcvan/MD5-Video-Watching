@@ -15,9 +15,10 @@ export interface ChannelType {
   channelName: string;
   joinDate: string;
   logoUrl: string;
-  thumbnail: string;
+  thumbnailM: string;
   channelCode: string;
   recordHistory: number;
+  about: string;
 }
 
 export interface VideoType {

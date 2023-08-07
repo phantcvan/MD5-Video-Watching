@@ -22,6 +22,11 @@ export class ChannelController {
     return this.channelService.findChannelByEmail(email);
   }
 
+  @Get('channelInfo/:code')
+  findChannelByCode(@Param('code') code: string) {
+    return this.channelService.findChannelByCode(code);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateChannelDto: UpdateChannelDto) {
     return this.channelService.update(+id, updateChannelDto);

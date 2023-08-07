@@ -46,6 +46,11 @@ export class ChannelService {
     return this.channelRepo.findOne({ where: { email } });
   }
 
+  findChannelByCode(channelCode: string) {
+    return this.channelRepo.findOne({ where: { channelCode } });
+  }
+
+
 
   update(id: number, updateChannelDto: UpdateChannelDto) {
     return `This action updates a #${id} channel`;

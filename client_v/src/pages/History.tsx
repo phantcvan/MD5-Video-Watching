@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 import VideoCompInfo from '../components/VideoCompInfo';
 import ModalDeleteHistory from '../components/ModalDeleteHistory';
 import { formatDate, getCurrentDate } from '../static/fn'
+import { setPickSidebar } from '../slices/appSlice';
 
 interface HistoryProp {
   id: number;
@@ -61,15 +62,18 @@ const History = () => {
       const [videosResponse] = await Promise.all([
         axios.get(`http://localhost:5000/api/v1/history/${currentChannel?.id}`),
       ]);
+
       const videoSort = videosResponse?.data?.sort((a: HistoryProp, b: HistoryProp) =>
         (b.id) - (a.id));
       setVideos(videoSort);
-      setVideosFilter(videoSort)
+      setVideosFilter(videoSort);
+      console.log("videosFilter", videoSort);
     } catch (error) {
       console.error(error);
     }
   };
   useEffect(() => {
+    dispatch(setPickSidebar("History"))
     fetchWatchedVideo();
   }, []);
 
@@ -135,6 +139,21 @@ const History = () => {
   };
   // console.log("uniqueViewDates", uniqueViewDates);
   let currentDate: string | null = null;
+  function isSameDate(date1: Date | null, date2: string | null): boolean {
+    if (!date1 || !date2) return false;
+
+    const parsedDate2 = new Date(date2);
+
+    const year1 = date1.getFullYear();
+    const month1 = date1.getMonth();
+    const day1 = date1.getDate();
+
+    const year2 = parsedDate2.getFullYear();
+    const month2 = parsedDate2.getMonth();
+    const day2 = parsedDate2.getDate();
+
+    return year1 === year2 && month1 === month2 && day1 === day2;
+  }
   return (
     <div className={`w-full min-h-screen h-[calc(100%-53px)] mt-[53px] bg-yt-black flex flex-col z-0 ml-[18px]
     sm:px-6 md:px-7 lg:px-8 xl:px-9 text-yt-white `}>
@@ -142,12 +161,15 @@ const History = () => {
       <div className='flex'>
         {currentChannel
           ? <div className='flex basis-2/3 flex-col ml-5 mr-10'>
-            {videosFilter.map((video) => {
-              const isDifferentDate = currentDate !== video.view_date;
-              currentDate = video.view_date;
+            {videosFilter.map((video, index) => {
+              const videoDate = new Date(video.view_date);
+              const isDifferentDate = index === 0 || !isSameDate(videoDate, videosFilter[index - 1]?.view_date);
               return (
                 <div key={video.id} className='flex flex-col my-1'>
-                  {isDifferentDate && <p className='text-lg font-semibold'>{formatDate(video.view_date)}</p>}
+                  {isDifferentDate && <p className='text-lg font-semibold'>
+                    {formatDate(video.view_date)}
+                    {/* {video.view_date} */}
+                    </p>}
                   <div className='flex justify-between items-start my-3 gap-2 hide-scrollbar-x' >
                     <Link to={`/video/${video?.video.videoCode}`}>
                       <div className='w-[246px] aspect-video rounded-md cursor-pointer'>

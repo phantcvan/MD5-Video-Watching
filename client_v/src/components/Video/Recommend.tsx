@@ -10,6 +10,7 @@ import ReactPlayer from 'react-player';
 import VideoCompInfo from '../VideoCompInfo';
 import { Link, useParams } from 'react-router-dom';
 import '../../index.css'
+import { getCurrentChannel } from '../../slices/channelSlice';
 
 interface RecommendProp {
   tags: AllTags[]
@@ -25,28 +26,62 @@ const Recommend = ({ tags }: RecommendProp) => {
   const dispatch = useDispatch();
   const allVideos = useSelector(getVideos);
   const { id: videoCode } = useParams();
-  // console.log(videoCode);
-
-
+  const currentChannel = useSelector(getCurrentChannel)
+  // console.log("tags", tags);
 
   const allTags = [{ tag: "All" }, ...tags, { tag: "Recently uploaded" }, { tag: "Watched" }]
 
-  // console.log(isChoice);
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [videosResponse] =
-        await Promise.all([
-          axios.get(`http://localhost:5000/api/v1/videos/all/${start}`),
-        ]);
-      const newVideos = [...allVideos, ...videosResponse.data.videos]
-      dispatch(setVideos(newVideos));
+      const tagsJson = JSON.stringify(tags);
+      const videosWithTagResponses = [];
+      const uniqueVideosTag: VideoType[] = [];
+      if (tags && tags.length > 0) {
+        const promises1 = tags.map(async (tag) => {
+          const withTagResponse = await axios.get(`http://localhost:5000/api/v1/tag/withTag/${tag.tag}`);
+          // console.log("withTagResponse", withTagResponse);
+          return withTagResponse?.data;
+        });
+
+        videosWithTagResponses.push(...(await Promise.all(promises1)));
+        const flattenedVideos = videosWithTagResponses.flat();
+
+        flattenedVideos.forEach((video) => {
+          if (!uniqueVideosTag.some((uniqueVideo) => uniqueVideo.id === video.id)) {
+            uniqueVideosTag.push(video);
+          }
+        });
+        // console.log("videosWithTagResponses", uniqueVideosTag);
+      }
+      const videosWithoutTagResponses = [];
+      const promises2 = tags.map(async (tag) => {
+        const response = await axios.get(`http://localhost:5000/api/v1/tag/withoutTag/${tag.tag}`);
+        return response?.data;
+      });
+
+      videosWithoutTagResponses.push(...(await Promise.all(promises2)));
+      const flattenedVideos2 = videosWithoutTagResponses.flat();
+      const uniqueVideosWithoutTag: VideoType[] = [];
+      flattenedVideos2.forEach((video) => {
+        if (!uniqueVideosWithoutTag.some((uniqueVideo) => uniqueVideo.id === video.id)) {
+          uniqueVideosWithoutTag.push(video);
+        }
+      });
+      const recommend = uniqueVideosTag.concat(uniqueVideosWithoutTag);
+      const uniqueRecommend: VideoType[] = [];
+      recommend.forEach((video) => {
+        if (!uniqueRecommend.some((uniqueVideo) => uniqueVideo.id === video.id)) {
+          uniqueRecommend.push(video);
+        }
+      });
+      dispatch(setVideos(uniqueRecommend));
       dispatch(setShowMenu(false));
       dispatch(setShowLogIn(false));
-      setLastPage(videosResponse?.data?.lastPage)
-      if (!videosResponse?.data?.lastPage) {
-        setStart(prev => prev + 1);
-      }
+      // setLastPage(videosResponse?.data?.lastPage)
+      // if (!videosResponse?.data?.lastPage) {
+      //   setStart(prev => prev + 1);
+      // }
     } catch (error) {
       console.error(error);
     } finally {
@@ -56,7 +91,7 @@ const Recommend = ({ tags }: RecommendProp) => {
   const fetchVideoBelongTag = async () => {
     try {
       const [videosResponse] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/tag/${isChoice}`),
+        axios.get(`http://localhost:5000/api/v1/tag/withTag/${isChoice}`),
       ]);
       setVideosTag(videosResponse?.data)
     } catch (error) {
@@ -78,33 +113,36 @@ const Recommend = ({ tags }: RecommendProp) => {
   const fetchWatchedVideo = async () => {
     try {
       const [videosResponse] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/history/9`),
+        axios.get(`http://localhost:5000/api/v1/history/${currentChannel?.id}`),
       ]);
-      const watchedVideos = videosResponse?.data.map((item: any) => ({
-        id: item.id,
-        videoUrl: item.videoUrl,
-        title: item.title,
-        thumbnail: item.thumbnail,
-        upload_date: item.upload_date,
-        videoCode: item.videoCode,
-        description: item.description,
-        views: item.views,
-        channel: {
-          id: item.channelId,
-          email: item.email,
-          channelCode: item.channelCode,
-          channelName: item.channelName,
-          logoUrl: item.logoUrl,
-        },
-      }));
-      setVideosTag(watchedVideos)
+      console.log("videosResponse",videosResponse);
+      
+      // const watchedVideos = videosResponse?.data.map((item: any) => ({
+      //   id: item.id,
+      //   videoUrl: item.videoUrl,
+      //   title: item.title,
+      //   thumbnail: item.thumbnail,
+      //   upload_date: item.upload_date,
+      //   videoCode: item.videoCode,
+      //   description: item.description,
+      //   views: item.views,
+      //   channel: {
+      //     id: item.channelId,
+      //     email: item.email,
+      //     channelCode: item.channelCode,
+      //     channelName: item.channelName,
+      //     logoUrl: item.logoUrl,
+      //   },
+      // }));
+      // setVideosTag(watchedVideos);
     } catch (error) {
       console.error(error);
     }
   };
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     fetchData();
-  }, []);
+  }, [tags]);
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
     return () => {
@@ -113,7 +151,10 @@ const Recommend = ({ tags }: RecommendProp) => {
   }, [loading, lastPage]);
   useEffect(() => {
     const videoFilter = allVideos.filter((video: VideoType) => video.videoCode !== videoCode)
+    // console.log("videoFilter", videoFilter);
+
     if (isChoice === "All") {
+      // const videosWithTag = videoFilter.filter((video: VideoType) =>)
       setVideosTag(videoFilter);
     } else if (isChoice === "Recently uploaded") {
       fetchNewestVideo()
@@ -157,7 +198,7 @@ const Recommend = ({ tags }: RecommendProp) => {
             </div>
           </Link>
           <div className='flex flex-1 '>
-            <VideoCompInfo video={video} home={home} description={description}/>
+            <VideoCompInfo video={video} home={home} description={description} />
           </div>
         </div>
       ))}

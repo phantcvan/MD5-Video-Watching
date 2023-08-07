@@ -31,6 +31,9 @@ export class Channel {
   @Column({ type: "longtext", nullable: true })
   thumbnailM: string
 
+  @Column({ type: "longtext", nullable: true })
+  about: string
+
   @CreateDateColumn({ type: 'datetime' })
   joinDate: Date;
 

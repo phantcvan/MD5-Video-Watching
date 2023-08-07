@@ -24,13 +24,28 @@ export class SubscribeService {
     return `This action returns all subscribe`;
   }
   // Lấy danh sách người đăng ký của một kênh:
-  async findListSubscribed(channelId: number) {
+  async findListSubscriber(channelId: number) {
     const query = `
       SELECT channel.*
       FROM channel
       INNER JOIN subscribe_channel AS subscribe
       ON channel.id = subscribe.subscriber_id
       WHERE subscribe.subscribed_id = ?
+    `;
+
+    const channels = await this.channelRepo.query(query, [channelId]);
+    return channels;
+  }
+
+
+  // Lấy danh sách kênh đăng ký của một người:
+  async findListSubscribed(channelId: number) {
+    const query = `
+      SELECT channel.*
+      FROM channel
+      INNER JOIN subscribe_channel AS subscribe
+      ON channel.id = subscribe.subscribed_id
+      WHERE subscribe.subscriber_id = ?
     `;
 
     const channels = await this.channelRepo.query(query, [channelId]);

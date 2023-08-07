@@ -17,6 +17,11 @@ export class SubscribeController {
     return this.subscribeService.findAll();
   }
   // Lấy danh sách người đăng ký của một kênh:
+  @Get('subscriber/:id')
+  findListSubscriber(@Param('id') id: string) {
+    return this.subscribeService.findListSubscriber(+id);
+  }
+  // Lấy danh sách kênh đăng ký của một người:
   @Get('subscribed/:id')
   findListSubscribed(@Param('id') id: string) {
     return this.subscribeService.findListSubscribed(+id);

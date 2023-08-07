@@ -15,20 +15,21 @@ export const handleNumber = (number: number) => {
 export const formatDate = (date: string) => {
   const viewDate = moment(date);
   const now = moment();
+  const isToday = now.isSame(viewDate, 'day');
   const diffInDays = now.diff(viewDate, 'days');
   const diffInWeeks = now.diff(viewDate, 'weeks');
   const isThisYear = now.year() === viewDate.year();
 
-  if (diffInDays == 0) {
-    return "Today"
-  } else if (diffInDays < 7 && diffInDays > 0) {
+  if (isToday) {
+    return "Today";
+  } else if (diffInDays <= 6 && diffInDays >= 0) {
     return viewDate.format('dddd');
-  } else if (diffInWeeks < 52 && isThisYear) {
+  } else if (diffInDays > 6 && isThisYear) {
     return viewDate.format('MMM DD');
   } else {
     return viewDate.format('YYYY, MMM DD');
   }
-}
+};
 
 export const getCurrentDate = () => {
   const currentDate = new Date();

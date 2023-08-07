@@ -17,6 +17,7 @@ import { ChannelType } from '../static/type';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { getCurrentDate } from '../static/fn';
+import { FiEdit3 } from 'react-icons/fi';
 // import { handleAddChannel } from "../static/handleAddChannel";
 
 
@@ -223,10 +224,18 @@ const Navbar = () => {
                 {showLogIn && (
                   <div className={`dropdown absolute mt-2 bg-[#282828] rounded-md shadow-lg right-[10px]`}>
                     <ul className="py-1">
-                      <Link to={`/channel/${channel_id}`}>
+                      <Link to={`/channel/${currentChannel?.channelCode}`}>
                         <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer text-yt-white"
                           onClick={() => dispatch(setShowLogIn(false))}>
                           <span className="flex items-center gap-2"><BsPersonCircle size={20} /> Your Channel</span>
+                        </li>
+                      </Link>
+                      <Link to={`/edit-info/${currentChannel?.channelCode}`}>
+                        <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer text-yt-white"
+                          onClick={() => dispatch(setShowLogIn(false))}>
+                          <span className="flex items-center gap-2">
+                            <FiEdit3 size={20} /> Customize channel
+                          </span>
                         </li>
                       </Link>
                       <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer text-yt-white"

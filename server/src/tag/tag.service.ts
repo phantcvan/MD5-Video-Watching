@@ -23,7 +23,7 @@ export class TagService {
     return 'This action adds a new tag';
   }
 
-  async findAll(): Promise<{tag: string;}[]> {
+  async findAll(): Promise<{ tag: string; }[]> {
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 2);
 
@@ -46,9 +46,7 @@ export class TagService {
   }
 
   async findAllVideoWithTagInfo(tag: string): Promise<Video[]> {
-    const orderBy = {
-      'video.upload_date': 'DESC', // Sort by upload_date in descending order
-    };
+
     const videos = await this.videoRepository
       .createQueryBuilder('video')
       .innerJoinAndSelect('video.tags', 'tag', 'tag.tag = :tag', { tag }) // Lấy video có tag cụ thể
@@ -67,6 +65,39 @@ export class TagService {
         'channel.logoUrl',
       ])
       .orderBy('video.upload_date', 'DESC')
+      .getMany();
+
+    return videos;
+  }
+
+  async findAllVideoWithoutTagInfo(tag: string): Promise<Video[]> {
+
+    // Subquery to select video IDs with the given tag
+    const subquery = this.videoRepository
+      .createQueryBuilder('sub_video')
+      .innerJoin('sub_video.tags', 'sub_tag', 'sub_tag.tag = :tag', { tag })
+      .select('sub_video.id');
+
+    // Main query to select videos without the given tag
+    const videos = await this.videoRepository
+      .createQueryBuilder('video')
+      .leftJoinAndSelect('video.channel', 'channel') // Lấy thông tin channel liên quan
+      .where(`video.id NOT IN (${subquery.getQuery()})`) // Chọn video không có tag tương ứng
+      .orderBy('video.upload_date', 'DESC')
+      .setParameters(subquery.getParameters())
+      .select([
+        'video.id',
+        'video.videoCode',
+        'video.videoUrl',
+        'video.views',
+        'video.title',
+        'video.thumbnail',
+        'video.description',
+        'video.upload_date',
+        'channel.id',
+        'channel.channelName',
+        'channel.logoUrl',
+      ])
       .getMany();
 
     return videos;

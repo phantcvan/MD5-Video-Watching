@@ -25,7 +25,7 @@ const VideoInfo = ({ video }: VideoComp) => {
   const fetchSubData = async () => {
     try {
       const [subscribeResponse] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/subscribe/subscribed/${video?.channel?.id}`)
+        axios.get(`http://localhost:5000/api/v1/subscribe/subscriber/${video?.channel?.id}`)
 
       ])
       // console.log("subscribeResponse", subscribeResponse?.data);

@@ -19,9 +19,14 @@ export class TagController {
     return this.tagService.findAll();
   }
 
-  @Get(':tag')
+  @Get('withTag/:tag')
   async findAllVideoWithTagInfo(@Param('tag') tag: string): Promise<Video[]> {
     return this.tagService.findAllVideoWithTagInfo(tag);
+  }
+
+  @Get('withoutTag/:tag')
+  async findAllVideoWithoutTagInfo(@Param('tag') tag: string): Promise<Video[]> {
+    return this.tagService.findAllVideoWithoutTagInfo(tag);
   }
 
   @Get('tagForVideo/:videoId')

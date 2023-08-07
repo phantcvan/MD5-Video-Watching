@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import Library from "./pages/Library";
 import History from "./pages/History";
 import Hashtag from "./pages/Hashtag";
+import EditChannelInfo from "./pages/EditChannelInfo";
 
 
 
@@ -47,6 +48,7 @@ function App() {
             <Route path="/video/:id" element={<Video />} />
             <Route path="/hashtag/:id" element={<Hashtag />} />
             <Route path="/channel/:id" element={<Channel />} />
+            <Route path="/edit-info/:id" element={<EditChannelInfo />} />
             <Route path="/subscription" element={<Subscription />} />
             <Route path="/likedVideos" element={<Liked />} />
             <Route path="/library" element={<Library />} />
@@ -54,7 +56,7 @@ function App() {
             <Route path="/search" element={<Search />} />
 
           </Route>
-            <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </>

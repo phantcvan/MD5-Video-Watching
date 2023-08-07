@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CategoryItems } from "../static/data";
 import { Link } from "react-router-dom";
 import { getAllChannels, getChannelsSub, getCurrentChannel, setCurrentChannel } from '../slices/channelSlice';
@@ -15,7 +15,7 @@ import { SiYoutubegaming } from "react-icons/si";
 import { BsNewspaper } from "react-icons/bs";
 import { CiTrophy } from "react-icons/ci";
 import { ChannelType } from "../static/type";
-import { setShowMenu } from "../slices/appSlice";
+import { getPickSidebar, setPickSidebar, setShowMenu } from "../slices/appSlice";
 import { GoHistory } from "react-icons/go";
 import { RiVideoFill } from "react-icons/ri";
 import "../index.css";
@@ -31,11 +31,13 @@ interface SidebarItem {
 
 
 const Sidebar = ({ }) => {
-  const [active, setActive] = useState("Home");
   const dispatch = useDispatch();
   const currentChannel = useSelector(getCurrentChannel);
   const myChannelId = currentChannel?.channelCode;
+  const myChannelName = currentChannel?.channelName;
   const allChannels = useSelector(getAllChannels);
+  const [subscribes, setSubscribes] = useState<ChannelType[]>([]);
+  const pick = useSelector(getPickSidebar);
   // const channelsSub = useSelector(getChannelsSub);
   // let SideBarItems: SideBarType;
 
@@ -101,6 +103,34 @@ const Sidebar = ({ }) => {
     }
   };
 
+  const fetchSubsData = async () => {
+    try {
+      const [subscribesResponse] = await Promise.all([
+        axios.get(`http://localhost:5000/api/v1/subscribe/subscribed/${currentChannel?.id}`),
+      ]);
+      console.log(subscribesResponse?.data);
+      setSubscribes(subscribesResponse?.data);
+      // const newestVideos = [];
+      // if (subscribesResponse?.data.length > 0) {
+      //   const promises = subscribesResponse?.data.reverse().map(async (channel: ChannelType) => {
+      //     const response = await axios.get(`http://localhost:5000/api/v1/videos/newest/${channel.id}`);
+      //     return response?.data;
+      //   });
+      //   newestVideos.push(...(await Promise.all(promises)));
+      //   const flattenedVideos = newestVideos.flat();
+      //   // console.log(flattenedVideos);
+      //   setSubscribes(flattenedVideos)
+      // }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    if (currentChannel) {
+      fetchSubsData();
+    }
+  }, []);
+
 
   return (
     <div className="w-full h-[100vh] z-20 overflow-y-hidden bg-overlay-w-100 
@@ -116,9 +146,9 @@ const Sidebar = ({ }) => {
           <Link to="/">
             <div
               className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer hover:bg-yt-light-black
-               my-1 ${active === "Home" ? "bg-yt-light-black" : "bg-yt-black"
+               my-1 ${pick === "Home" ? "bg-yt-light-black" : "bg-yt-black"
                 }`}
-              onClick={() => { setActive("Home"); dispatch(setShowMenu(false)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              onClick={() => { dispatch(setPickSidebar("Home")); dispatch(setShowMenu(false)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             >
               <span className="mr-5 my-1"><AiFillHome size={21} /></span>
               <p className="p-2 text-sm font-medium">Home</p>
@@ -128,9 +158,9 @@ const Sidebar = ({ }) => {
           <Link to="/subscription">
             <div
               className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer hover:bg-yt-light-black
-               my-1 ${active === "Subscription" ? "bg-yt-light-black" : "bg-yt-black"
+               my-1 ${pick === "Subscription" ? "bg-yt-light-black" : "bg-yt-black"
                 }`}
-              onClick={() => { setActive("Subscription"); dispatch(setShowMenu(false)) }}
+              onClick={() => { dispatch(setPickSidebar("Subscription")); dispatch(setShowMenu(false)) }}
             >
               <span className="mr-5 my-1"><MdOutlineSubscriptions size={21} /></span>
               <p className="p-2 text-sm font-medium">Subscription</p>
@@ -141,9 +171,9 @@ const Sidebar = ({ }) => {
           <Link to="/library">
             <div
               className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer hover:bg-yt-light-black
-               my-1 ${active === "Library" ? "bg-yt-light-black" : "bg-yt-black"
+               my-1 ${pick === "Library" ? "bg-yt-light-black" : "bg-yt-black"
                 }`}
-              onClick={() => { setActive("Library"); dispatch(setShowMenu(false)) }}
+              onClick={() => { dispatch(setPickSidebar("Library")); dispatch(setShowMenu(false)) }}
             >
               <span className="mr-5 my-1"><MdVideoLibrary size={21} /></span>
               <p className="p-2 text-sm font-medium">Library</p>
@@ -153,9 +183,9 @@ const Sidebar = ({ }) => {
           <Link to="/history">
             <div
               className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer hover:bg-yt-light-black
-               my-1 ${active === "History" ? "bg-yt-light-black" : "bg-yt-black"
+               my-1 ${pick === "History" ? "bg-yt-light-black" : "bg-yt-black"
                 }`}
-              onClick={() => { setActive("History"); dispatch(setShowMenu(false)) }}
+              onClick={() => { dispatch(setPickSidebar("History")); dispatch(setShowMenu(false)) }}
             >
               <span className="mr-5 my-1"><GoHistory size={21} /></span>
               <p className="p-2 text-sm font-medium">History</p>
@@ -166,9 +196,9 @@ const Sidebar = ({ }) => {
               <Link to={`/channel/${myChannelId}`}>
                 <div
                   className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer hover:bg-yt-light-black
-             my-1 ${active === "Channel" ? "bg-yt-light-black" : "bg-yt-black"
+             my-1 ${pick === myChannelName ? "bg-yt-light-black" : "bg-yt-black"
                     }`}
-                  onClick={() => { setActive("Channel"); dispatch(setShowMenu(false)) }}
+                  onClick={() => { dispatch(setPickSidebar(myChannelName)); dispatch(setShowMenu(false)) }}
                 >
                   <span className="mr-5 my-1"><RiVideoFill size={21} /></span>
                   <p className="p-2 text-sm font-medium">Your Videos</p>
@@ -177,9 +207,9 @@ const Sidebar = ({ }) => {
               <Link to={`/likedVideos`}>
                 <div
                   className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer hover:bg-yt-light-black
-             my-1 ${active === "Liked" ? "bg-yt-light-black" : "bg-yt-black"
+             my-1 ${pick === "Liked" ? "bg-yt-light-black" : "bg-yt-black"
                     }`}
-                  onClick={() => { setActive("Liked"); dispatch(setShowMenu(false)) }}
+                  onClick={() => { dispatch(setPickSidebar("Liked")); dispatch(setShowMenu(false)) }}
                 >
                   <span className="mr-5 my-1"><AiOutlineLike size={21} /></span>
                   <p className="p-2 text-sm font-medium">Liked videos</p>
@@ -192,25 +222,30 @@ const Sidebar = ({ }) => {
 
 
         </div>
-        {/* {sidebar.SideBarItems.Middle.length > 0
-        && <>
-          <hr className="text-yt-light-black my-2" />
-          <div className="mb-4">
-            {sidebar.SideBarItems.Middle.map((item, index) => (
-              <Link to={item.path} key={index}>
-                <div
-                  key={index}
-                  className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer hover:bg-yt-light-black my-1 ${item.name === active ? "bg-yt-light-black" : "bg-yt-black"
-                    }`}
-                  onClick={() => setActive(item.name)}
-                >
-                  <span className="mr-5">{item.icon}</span>
-                  <p className="p-2 text-sm font-medium">{item.name}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </>} */}
+        {subscribes.length > 0
+          && <>
+            <div className="mb-4">
+              {subscribes.map((item, index) => (
+                <Link to={`/channel/${item.channelCode}`} key={index}>
+                  <div
+                    key={index}
+                    className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer my-1
+                    hover:bg-yt-light-black ${item.channelName === pick ? "bg-yt-light-black" : "bg-yt-black"
+                      }`}
+                    onClick={() => { dispatch(setPickSidebar(item.channelName)); dispatch(setShowMenu(false)) }}
+                  >
+                    <img src={item.logoUrl} alt="" className="h-6 w-6 rounded-full" />
+                    {/* <span className="mr-5">{item.logoUrl}</span> */}
+                    <p className="p-2 text-sm font-medium">
+                      {item.channelName?.length <= 20
+                        ? item.channelName
+                        : `${item.channelName.substr(0, 20)}...`}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </>}
         {!currentChannel
           && <div className="px-3">
             <div className="mb-4 ">
@@ -238,7 +273,7 @@ const Sidebar = ({ }) => {
                 <div
                   className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer hover:bg-yt-light-black
                my-1 ${item.name === active ? "bg-yt-light-black" : "bg-yt-black"} gap-4`}
-                  onClick={() => setActive(item.name)}
+                  onClick={() => dispatch(setPickSidebar(item.name)}
                 >
                   <div className="h-6 w-6 rounded-full overflow-hidden">
                     <img src={item.logoUrl} alt="" />
@@ -250,7 +285,7 @@ const Sidebar = ({ }) => {
 
           </div>
         </div>} */}
-        {/* <hr className="text-yt-light-black" /> */}
+        <hr className="text-yt-light-black" />
         <div className="flex flex-wrap">
           {CategoryItems.map((item, index) => {
             return (
@@ -264,7 +299,7 @@ const Sidebar = ({ }) => {
           }
           )}
         </div>
-        <hr className="text-yt-light-black my-2" />
+        {/* <hr className="text-yt-light-black my-2" /> */}
       </div>
     </div>
   );

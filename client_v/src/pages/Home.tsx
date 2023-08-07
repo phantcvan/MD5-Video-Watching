@@ -39,8 +39,18 @@ const Home = () => {
       const tags = allTagsResponse?.data
       const tagsWithAll = [{ tag: "All" }, ...tags, { tag: "Recently uploaded" }, { tag: "Watched" }]
       dispatch(setAllTags(tagsWithAll));
-      const newVideos = [...allVideos, ...videosResponse.data.videos]
-      dispatch(setVideos(newVideos));
+      const newVideos: VideoType[] = [...allVideos, ...videosResponse.data.videos];
+      // console.log("newVideos", newVideos);
+
+      const uniqueVideos: VideoType[] = [];
+      newVideos.forEach((newVideo) => {
+        if (!uniqueVideos.some((uniqueVideo) => uniqueVideo.id === newVideo.id)) {
+          uniqueVideos.push(newVideo);
+        }
+      });
+      // console.log("uniqueVideos", uniqueVideos);
+
+      dispatch(setVideos(uniqueVideos));
       dispatch(setShowMenu(false));
       dispatch(setShowLogIn(false));
       setLastPage(videosResponse?.data?.lastPage)
@@ -57,26 +67,21 @@ const Home = () => {
 
 
   // khi có user
-  const fetchDataSubs = async () => {
-    try {
-      const [subscribesResponse] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/subscribes/all/${currentChannel?.email}`),
-      ]);
-      // const subscribedChannels = allChannels.filter((channel:Channel) => {
-      //   return subscribesResponse.data.subscribes.some(
-      //     (subscribe:Channel) => subscribe.id === channel.id
-      //   );
-      // });
-      // dispatch(setChannelsSub(subscribedChannels));
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  // const fetchDataSubs = async () => {
+  //   try {
+  //     const [subscribesResponse] = await Promise.all([
+  //       axios.get(`http://localhost:5000/api/v1/subscribes/all/${currentChannel?.email}`),
+  //     ]);
+
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
   // khi chọn tag
   const fetchVideoBelongTag = async () => {
     try {
       const [videosResponse] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/tag/${isChoice}`),
+        axios.get(`http://localhost:5000/api/v1/tag/withTag/${isChoice}/${start}`),
       ]);
       setVideosTag(videosResponse?.data)
     } catch (error) {
@@ -140,9 +145,9 @@ const Home = () => {
     fetchData();
     // if (!lastPage) setStart(prev => prev + 1);
     dispatch(setShowMenu(showMenu));
-    if (currentChannel != null) {
-      fetchDataSubs();
-    }
+    // if (currentChannel != null) {
+    //   // fetchDataSubs();
+    // }
   }, []);
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
@@ -162,7 +167,6 @@ const Home = () => {
     );
     const clientHeight = document.documentElement.clientHeight;
     if (scrollTop + clientHeight >= scrollHeight - 200 && !loading && !lastPage) {
-      // setStart(prev => prev + 1);
       fetchData();
     }
   };
@@ -191,8 +195,8 @@ const Home = () => {
 
 
   return (
-    <div className={`max-w-full min-h-screen h-[calc(100%-53px)] mt-[53px] bg-yt-black flex z-0 flex-col ml-[18px]
-    sm:px-6 md:px-7 lg:px-8 xl:px-9`}>
+    <div className={`max-w-full min-h-screen h-[calc(100%-53px)] mt-[53px] bg-yt-black flex z-0 flex-col
+    sm:px-6 md:px-7 lg:px-8 xl:px-9 ml-7`}>
       <Tag allTags={allTags} isChoice={isChoice} setIsChoice={setIsChoice} />
       <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {videosTag?.map((video) => (

@@ -15,6 +15,7 @@ import HistoryLib from "../components/Library/HistoryLib";
 import LikedLib from "../components/Library/LikedLib";
 import LibInfo from "../components/Library/LibInfo";
 import { getCurrentDate } from "../static/fn";
+import { setPickSidebar } from "../slices/appSlice";
 
 interface HistoryProp {
   id: number;
@@ -121,6 +122,7 @@ const Library = () => {
     }
   };
   useEffect(() => {
+    dispatch(setPickSidebar("Library"))
     fetchWatchedVideo();
   }, []);
 
