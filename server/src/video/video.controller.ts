@@ -25,6 +25,12 @@ export class VideoController {
     const parsedTags = JSON.parse(tags);
     return this.videoService.findAllByTag(start, parsedTags);
   }
+
+  @Get('find/search')
+  async searchVideos(@Query('q') search: string) {
+    return await this.videoService.searchVideos(search);
+  }
+  
   @Get('new')
   findNewVideo(): Promise<any> {
     return this.videoService.findNewVideo();

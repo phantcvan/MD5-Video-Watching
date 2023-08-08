@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query } from '@nestjs/common';
 import { ChannelService } from './channel.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
@@ -25,6 +25,11 @@ export class ChannelController {
   @Get('channelInfo/:code')
   findChannelByCode(@Param('code') code: string) {
     return this.channelService.findChannelByCode(code);
+  }
+
+  @Get('/find/search')
+  async searchChannel(@Query('q') search: string) {
+    return await this.channelService.searchChannel(search);
   }
 
   @Patch(':id')

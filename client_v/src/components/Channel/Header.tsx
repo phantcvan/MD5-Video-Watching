@@ -5,6 +5,7 @@ import { FaRegBell } from "react-icons/fa"
 import { handleNumber } from "../../static/fn"
 import { useState } from "react"
 import { useNavigate } from "react-router"
+import { Tooltip } from "antd"
 
 interface HeaderProp {
   channel: ChannelType | null,
@@ -25,7 +26,7 @@ const Header = ({ channel, isSubscribe, subscribers, videoCount, setPick }: Head
     <div className="flex flex-col gap-3">
       {channel?.thumbnailM
         && <img src={channel?.thumbnailM} className="aspect-[5.6] overflow-hidden object-cover w-full" />}
-      <div className="flex items-center gap-8 flex-1 mr-5">
+      <div className="flex items-center gap-8 flex-1 mr-5 ml-[88px]">
         <div className="flex flex-1 items-center gap-8">
           <div className="h-[128px] w-[128px] object-cover">
             <img
@@ -34,9 +35,11 @@ const Header = ({ channel, isSubscribe, subscribers, videoCount, setPick }: Head
             />
           </div>
           <div className="flex flex-col text-yt-white">
-            <span className="font-medium text-xl my-1">
-              {channel?.channelName}
-            </span>
+            <Tooltip placement="topLeft" title={channel?.channelName} color='#3F3F3F' arrow={false}>
+              <span className="font-medium text-xl my-1">
+                {channel?.channelName}
+              </span>
+            </Tooltip>
             <div className="flex gap-3 text-yt-light-4 text-sm">
               <span className="font-normal my-1">
                 @{channel?.email.split("@")[0]}
@@ -48,11 +51,12 @@ const Header = ({ channel, isSubscribe, subscribers, videoCount, setPick }: Head
                 {`${handleNumber(videoCount)} ${videoCount > 1 ? "videos" : "video"}`}
               </span>
             </div>
-            {channel?.about && <div className="flex gap-3 text-yt-light-4 text-sm">
+            {channel?.about && <div className="flex gap-3 text-yt-light-4 text-sm cursor-pointer"
+              onClick={() => setPick(3)}>
               <span className="font-normal my-1">
                 {channel?.about?.length <= 150
-                        ? channel?.about
-                        : `${channel?.about.substr(0, 150)}...`}
+                  ? channel?.about
+                  : `${channel?.about.substr(0, 150)}...`}
               </span>
             </div>}
 
@@ -74,7 +78,8 @@ const Header = ({ channel, isSubscribe, subscribers, videoCount, setPick }: Head
                 </>
               ) : (
                 <button
-                  className="rounded-l-full rounded-r-full bg-yt-white text-yt-black px-3 py-2"
+                  className="rounded-l-full rounded-r-full bg-yt-white text-yt-black px-3 py-2
+                  hover:bg-yt-light-7"
                   onClick={handleAddSubscribe}
                 >
                   Subscribe

@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Channel } from './entities/channel.entity';
 
 @Injectable()
@@ -50,7 +50,18 @@ export class ChannelService {
     return this.channelRepo.findOne({ where: { channelCode } });
   }
 
-
+  async searchChannel(searchQuery: string): Promise<Channel> {
+    const latestChannel = await this.channelRepo
+      .createQueryBuilder('channel')
+      .where(`channel.channelName LIKE :searchQuery OR channel.about LIKE :searchQuery 
+      OR channel.email LIKE :searchQuery`, 
+      { searchQuery: `%${searchQuery}%` })
+      .orderBy('channel.joinDate', 'DESC')
+      .getOne();
+  
+    return latestChannel;
+  }
+  
 
   update(id: number, updateChannelDto: UpdateChannelDto) {
     return `This action updates a #${id} channel`;

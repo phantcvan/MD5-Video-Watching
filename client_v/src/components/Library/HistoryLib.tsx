@@ -2,6 +2,7 @@ import { GoHistory } from "react-icons/go"
 import { Link } from "react-router-dom"
 import VideoComp from "../VideoComp"
 import { VideoType } from "../../static/type"
+import { useState } from "react"
 
 
 interface HistoryLib {
@@ -10,7 +11,7 @@ interface HistoryLib {
 }
 
 const HistoryLib = ({ videosHistory, home }: HistoryLib) => {
-
+  const [editable, setEditable] = useState(false);
 
   return (
       <div className='flex flex-col ml-5 mt-5'>
@@ -35,7 +36,7 @@ const HistoryLib = ({ videosHistory, home }: HistoryLib) => {
               key={video.id}
             >
               <VideoComp
-                video={video} home={home}
+                video={video} home={home} editable={editable}
               />
             </div>
           ))}

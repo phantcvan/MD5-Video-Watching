@@ -2,6 +2,7 @@ import { AiOutlineLike } from "react-icons/ai"
 import { Link } from "react-router-dom"
 import { VideoType } from "../../static/type"
 import VideoComp from "../VideoComp"
+import { useState } from "react"
 
 interface LikedProp {
   videosLiked: VideoType[],
@@ -9,6 +10,7 @@ interface LikedProp {
   likedCount: number
 }
 const LikedLib = ({ videosLiked, home, likedCount }: LikedProp) => {
+  const [editable, setEditable] = useState(false);
   return (
     <div className='flex flex-col ml-5 mt-5'>
       <div className="flex justify-between mt-2 my-4 items-center">
@@ -33,7 +35,7 @@ const LikedLib = ({ videosLiked, home, likedCount }: LikedProp) => {
             key={video.id}
           >
             <VideoComp
-              video={video} home={home}
+              video={video} home={home} editable={editable}
             />
           </div>
         ))}

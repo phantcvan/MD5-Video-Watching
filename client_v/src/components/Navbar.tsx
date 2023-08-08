@@ -52,7 +52,7 @@ const Navbar = () => {
   const handleAddKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
     const keyword = e.target.value;
     setSearchKeyword(keyword);
-    console.log(keyword.replace(/\s+/g, ' ').trim());
+    // console.log(keyword.replace(/\s+/g, ' ').trim());
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

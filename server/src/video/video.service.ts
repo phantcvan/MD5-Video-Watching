@@ -96,7 +96,7 @@ export class VideoService {
     const endIndex = startIndex + items_per_page;
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-  
+
     const videosWithinLastMonthQueryBuilder = this.videoRepository.createQueryBuilder('video');
     videosWithinLastMonthQueryBuilder
       .leftJoinAndSelect('video.channel', 'channel')
@@ -120,7 +120,7 @@ export class VideoService {
         'channel.recordHistory',
       ])
       .take(items_per_page);
-  
+
     const videosAfterLastMonthQueryBuilder = this.videoRepository.createQueryBuilder('video');
     videosAfterLastMonthQueryBuilder
       .leftJoinAndSelect('video.channel', 'channel')
@@ -143,21 +143,21 @@ export class VideoService {
         'channel.channelCode',
       ])
       .take(items_per_page);
-  
+
     const [videosWithinLastMonth, totalWithinLastMonth] = await videosWithinLastMonthQueryBuilder
       .skip(startIndex)
       .getManyAndCount();
-  
+
     const [videosAfterLastMonth, totalAfterLastMonth] = await videosAfterLastMonthQueryBuilder
       .skip(startIndex)
       .getManyAndCount();
-  
+
     const res = videosWithinLastMonth.concat(videosAfterLastMonth);
     const total = totalWithinLastMonth + totalAfterLastMonth;
-  
+
     const totalPages = Math.ceil(total / items_per_page);
     const lastPage = endIndex >= total;
-  
+
     return {
       videos: res,
       lastPage: lastPage,
@@ -176,7 +176,20 @@ export class VideoService {
     return query.getOne();
   }
 
+  async searchVideos(searchQuery: string): Promise<Video[]> {
+    const videos = await this.videoRepository
+      .createQueryBuilder('video')
+      .innerJoinAndSelect('video.channel', 'channel')
+      .where(
+        `video.title LIKE :searchQuery OR video.description LIKE :searchQuery 
+        OR channel.channelName LIKE :searchQuery OR channel.email LIKE :searchQuery`,
+        { searchQuery: `%${searchQuery}%` }
+      )
+      .orderBy('video.upload_date', 'DESC')
+      .getMany();
 
+    return videos;
+  }
 
 
   findOne(videoCode: string) {
@@ -185,14 +198,14 @@ export class VideoService {
       relations: { channel: true },
     });
   }
-// lấy video có videoId=id
+  // lấy video có videoId=id
   findVideobyId(id: number) {
     return this.videoRepository.findOne({
       where: { id },
       relations: { channel: true },
     });
   }
-// lấy video thuộc về channel
+  // lấy video thuộc về channel
   findVideobyChannelId(id: number) {
     return this.videoRepository.find({
       where: { channel: { id: id } },
@@ -229,7 +242,8 @@ export class VideoService {
 
 
 
-  remove(id: number) {
-    return `This action removes a #${id} video`;
+  async remove(id: number) {
+    const findVideo = await this.videoRepository.findOne({ where: { id: id } });
+    return this.videoRepository.remove(findVideo);
   }
 }

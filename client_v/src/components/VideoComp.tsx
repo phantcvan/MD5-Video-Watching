@@ -7,13 +7,16 @@ import ReactPlayer from 'react-player'
 import VideoCompInfo from './VideoCompInfo';
 interface VideoComp {
   video: VideoType,
-  home: boolean
+  home: boolean,
+  editable: boolean,
+  setEdited: React.Dispatch<React.SetStateAction<boolean>>
 }
-const VideoComp = ({ video, home }: VideoComp) => {
+const VideoComp = ({ video, home, editable, setEdited }: VideoComp) => {
   const [isHovered, setIsHovered] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [description, setDescription] = useState(false);
   const dispatch = useDispatch();
+  const [openMenu, setOpenMenu] = useState(-1);
 
   // hiển thị video khi hover
   useEffect(() => {
@@ -33,6 +36,7 @@ const VideoComp = ({ video, home }: VideoComp) => {
     setIsHovered(false);
     setShowVideo(false);
   };
+
 
   // Khi click thì tăng view
   const handleVideoClick = () => {
@@ -66,7 +70,8 @@ const VideoComp = ({ video, home }: VideoComp) => {
           )}
         </div>
       </Link>
-      <VideoCompInfo video={video} home={home} description={description} />
+      <VideoCompInfo video={video} home={home} description={description} editable={editable}
+      setEdited={setEdited}/>
 
     </div>
   )

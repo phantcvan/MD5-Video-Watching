@@ -26,6 +26,7 @@ const Home = () => {
   const [isChoice, setIsChoice] = useState("All");
   const allTags = useSelector(getAllTags);
   const [home, setHome] = useState(true);
+  const [editable, setEditable] = useState(false);
 
 
   // Khi không có user
@@ -103,7 +104,7 @@ const Home = () => {
   const fetchWatchedVideo = async () => {
     try {
       const [videosResponse] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/history/9`),
+        axios.get(`http://localhost:5000/api/v1/history/${currentChannel?.id}`),
       ]);
       const watchedVideos = videosResponse?.data.map((item: any) => ({
         id: item.id,
@@ -205,7 +206,7 @@ const Home = () => {
             key={video.id}
           >
             <VideoComp
-              video={video} home={home}
+              video={video} home={home} editable={editable}
             />
           </div>
         ))}
