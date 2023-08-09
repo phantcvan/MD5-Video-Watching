@@ -4,6 +4,7 @@ export default {
   theme: {
     colors: {
       "yt-black": "#0F0F0F",
+      "yt-black-1": "#1F1F1F",
       "yt-red": "#FF0300",
       "yt-white": "#F1F1F1",
       "yt-light-black": "#272727",

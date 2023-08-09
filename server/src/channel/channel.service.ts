@@ -39,7 +39,12 @@ export class ChannelService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} channel`;
+    const find = this.channelRepo.findOne({ where: { id } });
+    if (!find) {
+      throw new HttpException("Channel not found", HttpStatus.UNAUTHORIZED);
+    } else {
+      return find;
+    }
   }
 
   findChannelByEmail(email: string) {
@@ -54,27 +59,51 @@ export class ChannelService {
     const latestChannel = await this.channelRepo
       .createQueryBuilder('channel')
       .where(`channel.channelName LIKE :searchQuery OR channel.about LIKE :searchQuery 
-      OR channel.email LIKE :searchQuery`, 
-      { searchQuery: `%${searchQuery}%` })
+      OR channel.email LIKE :searchQuery`,
+        { searchQuery: `%${searchQuery}%` })
       .orderBy('channel.joinDate', 'DESC')
       .getOne();
-  
+
     return latestChannel;
   }
-  
 
-  update(id: number, updateChannelDto: UpdateChannelDto) {
-    return `This action updates a #${id} channel`;
+
+  async update(id: number, updateChannelDto: UpdateChannelDto) {
+    try {
+      let find = await this.channelRepo.findOne({
+        where: { id },
+      });
+      
+      if (find) {
+        // Update only the properties specified in the updateChannelDto
+        await this.channelRepo.update(id, updateChannelDto);
+        
+        return {
+          status: 200,
+          message: `Channel with ID ${id} updated successfully`,
+        };
+      } else {
+        throw new HttpException("Channel not found", HttpStatus.NOT_FOUND);
+      }
+    } catch (error) {
+      console.error('Error occurred while updating channel info:', error);
+      throw error;
+    }
   }
+  
 
   async updateHistoryRecord(id: number) {
     try {
       let find = await this.channelRepo.findOne({
         where: { id },
       });
-      let newRecord = find.recordHistory === 0 ? 1 : 0;
-      find.recordHistory = newRecord;
-      return await this.channelRepo.save(find);
+      if (find) {
+        let newRecord = find.recordHistory === 0 ? 1 : 0;
+        find.recordHistory = newRecord;
+        return await this.channelRepo.save(find);
+      } else {
+        throw new HttpException("Channel not found", HttpStatus.UNAUTHORIZED);
+      }
     } catch (error) {
       console.error('Error occurred while updating history record:', error);
       throw error;

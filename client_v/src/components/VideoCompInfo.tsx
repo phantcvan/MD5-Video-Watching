@@ -60,9 +60,8 @@ const VideoCompInfo = ({ video, home, description, editable, setEdited }: VideoC
 
   const handleCopy = () => {
     // setMessage("Link copied to clipboard");
-    navigator.clipboard.writeText(`http://localhost:5173/video/${video?.videoCode}`)
+    navigator.clipboard.writeText(`${video?.videoCode}`)
       .then(() => {
-        // console.log('Link copied to clipboard');
         notification.success({
           message: "Link copied to clipboard",
           style: {
@@ -92,7 +91,7 @@ const VideoCompInfo = ({ video, home, description, editable, setEdited }: VideoC
         Delete video
       </span>
       <Modal
-        title="Confirm Deletion"
+        title={<span className='font-semibold text-lg'>Delete forever</span>}
         visible={isModalVisible}
         onOk={handleDeleteVideo}
         onCancel={handleCancel}
@@ -100,12 +99,18 @@ const VideoCompInfo = ({ video, home, description, editable, setEdited }: VideoC
           <Button key="cancel" onClick={handleCancel} className='cancel-button'>
             Cancel
           </Button>,
-          <Button key="ok" className="ok-button" onClick={handleDeleteVideo}>
-            Delete
+          <Button key="ok"
+            className="ok-button"
+            onClick={handleDeleteVideo}>
+            Delete forever
           </Button>,
         ]}
       >
-        <p>Are you sure you want to delete this video?</p>
+        <div className='flex flex-col gap-1'>
+          <p className=''>Are you sure you want to delete this video?
+          </p>
+          <p>Deleting is permanent and can't be undone.</p>
+        </div>
       </Modal>
       <span
         className="hover:text-yt-white cursor-pointer text-[15px] px-1"

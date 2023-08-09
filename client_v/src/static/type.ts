@@ -21,6 +21,13 @@ export interface ChannelType {
   about: string;
 }
 
+export interface ChannelEditType {
+  channelName: string | null;
+  logoUrl: string | null;
+  thumbnailM: string | null;
+  about: string | null;
+}
+
 export interface VideoType {
   id: number;
   thumbnail: string;

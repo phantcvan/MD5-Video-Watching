@@ -27,12 +27,17 @@ export class ChannelController {
     return this.channelService.findChannelByCode(code);
   }
 
+  @Get('findChannel/:id')
+  findOne(@Param('id') id: string) {
+    return this.channelService.findOne(+id);
+  }
+
   @Get('/find/search')
   async searchChannel(@Query('q') search: string) {
     return await this.channelService.searchChannel(search);
   }
 
-  @Patch(':id')
+  @Patch('updateInfo/:id')
   update(@Param('id') id: string, @Body() updateChannelDto: UpdateChannelDto) {
     return this.channelService.update(+id, updateChannelDto);
   }
