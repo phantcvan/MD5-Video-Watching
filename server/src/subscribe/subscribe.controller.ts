@@ -32,8 +32,11 @@ export class SubscribeController {
     return this.subscribeService.update(+id, updateSubscribeDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.subscribeService.remove(+id);
+  @Delete(':userId/:subscribed_id')
+  remove(
+    @Param('userId') userId: string,
+    @Param('subscribed_id') subscribedId: string,
+  ) {
+    return this.subscribeService.remove(+userId, +subscribedId);
   }
 }

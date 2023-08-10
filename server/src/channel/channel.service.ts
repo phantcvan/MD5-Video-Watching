@@ -38,7 +38,7 @@ export class ChannelService {
     return this.channelRepo.find();
   }
 
-  findOne(id: number) {
+  findOneById(id: number) {
     const find = this.channelRepo.findOne({ where: { id } });
     if (!find) {
       throw new HttpException("Channel not found", HttpStatus.UNAUTHORIZED);
@@ -68,7 +68,7 @@ export class ChannelService {
   }
 
 
-  async update(id: number, updateChannelDto: UpdateChannelDto) {
+  async updateInfoChannel(id: number, updateChannelDto: UpdateChannelDto) {
     try {
       let find = await this.channelRepo.findOne({
         where: { id },

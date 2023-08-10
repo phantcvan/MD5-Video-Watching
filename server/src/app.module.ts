@@ -17,6 +17,8 @@ import { ReactionModule } from './reaction/reaction.module';
 import { Reaction } from './reaction/entities/reaction.entity';
 import { SubscribeModule } from './subscribe/subscribe.module';
 import { Subscribe } from './subscribe/entities/subscribe.entity';
+import { CmtActModule } from './cmt_act/cmt_act.module';
+import { CmtAct } from './cmt_act/entities/cmt_act.entity';
 
 @Module({
   imports: [
@@ -34,7 +36,7 @@ import { Subscribe } from './subscribe/entities/subscribe.entity';
         synchronize: configService.get<boolean>('DATABASE_SYNC'),
         logging: configService.get<boolean>('DATABASE_LOGGING'),
         // entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        entities: [Channel, Video, Tag, Comment, History, Reaction, Subscribe],
+        entities: [Channel, Video, Tag, Comment, History, Reaction, Subscribe, CmtAct],
       }),
     }),
     ChannelModule,
@@ -45,6 +47,7 @@ import { Subscribe } from './subscribe/entities/subscribe.entity';
     AuthModule,
     ReactionModule,
     SubscribeModule,
+    CmtActModule,
   ],
 })
 export class AppModule { }

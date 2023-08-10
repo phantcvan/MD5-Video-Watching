@@ -4,6 +4,7 @@ import { Video } from '../../video/entities/video.entity';
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Reaction } from 'src/reaction/entities/reaction.entity';
 import { Subscribe } from 'src/subscribe/entities/subscribe.entity';
+import { CmtAct } from 'src/cmt_act/entities/cmt_act.entity';
 
 @Entity()
 export class Channel {
@@ -46,13 +47,12 @@ export class Channel {
   @OneToMany(() => History, (history) => history.channel)
   history: History[]
 
-  @ManyToMany(() => Subscribe, subscribe => subscribe.channels)
-  @JoinTable({
-    name: 'subscribe_channel',
-    joinColumns: [{ name: 'subscribed_id', referencedColumnName: 'id' }],
-    inverseJoinColumns: [{ name: 'subscriber_id', referencedColumnName: 'id' }],
-  })
-  subscribers: Subscribe[];
+  @OneToMany(() => Subscribe, (subscribe) => subscribe.user)
+  subscribe: Subscribe[]
+
+  @OneToMany(() => CmtAct, (cmtAct) => cmtAct.channel)
+  cmtAct: CmtAct[]
+
 }
 
 

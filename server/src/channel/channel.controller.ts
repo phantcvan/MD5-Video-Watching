@@ -28,8 +28,8 @@ export class ChannelController {
   }
 
   @Get('findChannel/:id')
-  findOne(@Param('id') id: string) {
-    return this.channelService.findOne(+id);
+  findOneById(@Param('id') id: string) {
+    return this.channelService.findOneById(+id);
   }
 
   @Get('/find/search')
@@ -38,8 +38,8 @@ export class ChannelController {
   }
 
   @Patch('updateInfo/:id')
-  update(@Param('id') id: string, @Body() updateChannelDto: UpdateChannelDto) {
-    return this.channelService.update(+id, updateChannelDto);
+  updateInfoChannel(@Param('id') id: string, @Body() updateChannelDto: UpdateChannelDto) {
+    return this.channelService.updateInfoChannel(+id, updateChannelDto);
   }
 
   @Put('record/:id')

@@ -244,6 +244,10 @@ export class VideoService {
 
   async remove(id: number) {
     const findVideo = await this.videoRepository.findOne({ where: { id: id } });
-    return this.videoRepository.remove(findVideo);
+    if (findVideo) {
+      return this.videoRepository.remove(findVideo);
+    } else {
+      throw new NotFoundException('Video not found');
+    }
   }
 }

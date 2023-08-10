@@ -48,7 +48,7 @@ export class CommentService {
   }
 
   async findAllCmtBelongVideo(videoId: number): Promise<Comment[]> {
-    return this.cmtRepo.find({ where: { video: { id: videoId } } });
+    return this.cmtRepo.find({ where: { video: { id: videoId } }, order: { cmt_date: 'ASC' } });
   }
 
   update(id: number, updateCommentDto: UpdateCommentDto) {

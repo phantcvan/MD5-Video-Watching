@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Put, Param, Delete } from '@nestjs/common';
 import { ReactionService } from './reaction.service';
 import { CreateReactionDto } from './dto/create-reaction.dto';
 import { UpdateReactionDto } from './dto/update-reaction.dto';
@@ -12,14 +12,15 @@ export class ReactionController {
     return this.reactionService.create(createReactionDto);
   }
 
-  @Get()
-  findAll() {
-    return this.reactionService.findAll();
+  @Get('/allLike/:videoId')
+  findLikeByVideoId(@Param('videoId') videoId: string) {
+    return this.reactionService.findLikeByVideoId(+videoId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reactionService.findOne(+id);
+  @Get('/reactionOfVideo/:videoId/:channelId')
+  findOneByVideo(@Param('videoId') videoId: string,
+    @Param('channelId') channelId: string) {
+    return this.reactionService.findOneByVideo(+videoId, +channelId);
   }
 
   @Get('/filterByChannelId/:id')
@@ -27,13 +28,14 @@ export class ReactionController {
     return this.reactionService.findAllByChannelId(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReactionDto: UpdateReactionDto) {
-    return this.reactionService.update(+id, updateReactionDto);
+  @Put('')
+  update(@Body() updateReactionDto: UpdateReactionDto) {
+    return this.reactionService.update(updateReactionDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reactionService.remove(+id);
+  @Delete('/:videoId/:channelId')
+  remove(@Param('videoId') videoId: string,
+    @Param('channelId') channelId: string) {
+    return this.reactionService.remove(+videoId, +channelId);
   }
 }

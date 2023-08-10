@@ -21,8 +21,7 @@ export class HistoryService {
 
   async create(createHistoryDto: CreateHistoryDto) {
     const { channelId, videoId, view_date } = createHistoryDto;
-    // console.log(channelId);
-
+    // console.log("createHistoryDto", createHistoryDto);
     const channel = await this.channelRepository.findOne({ where: { id: channelId } });
     const video = await this.videoRepository.findOne({ where: { id: videoId } });
     if (!channel || !video) {
@@ -42,29 +41,32 @@ export class HistoryService {
       view_date,
       video: video,
     };
-
-    if (!existingHistory && channel?.recordHistory === 1) {
-      return this.historyRepository.save(newHistory);
-    } else if (existingHistory) {
-      const existingDate = new Date(existingHistory.view_date);
-      const newDate = new Date(view_date);
-      function isSameDate(date1: Date, date2: Date): boolean {
-        return (
-          date1.getFullYear() === date2.getFullYear() &&
-          date1.getMonth() === date2.getMonth() &&
-          date1.getDate() === date2.getDate()
-        );
-      }
-      if (isSameDate(existingDate, newDate) && channel?.recordHistory === 1) {
-        await this.historyRepository.remove(existingHistory); // Xoá dữ liệu cũ
+    if (channel?.recordHistory === 1) {
+      if (!existingHistory) {
+        console.log("Thêm mới");
         return this.historyRepository.save(newHistory);
+      } else if (existingHistory) {
+        const existingDate = new Date(existingHistory.view_date);
+        const newDate = new Date(view_date);
+        function isSameDate(date1: Date, date2: Date): boolean {
+          return (
+            date1.getFullYear() === date2.getFullYear() &&
+            date1.getMonth() === date2.getMonth() &&
+            date1.getDate() === date2.getDate()
+          );
+        }
+        if (isSameDate(existingDate, newDate)) {
+          await this.historyRepository.remove(existingHistory); // Xoá dữ liệu cũ
+          console.log("Update");
+          return this.historyRepository.save(newHistory);
+        } else if (!isSameDate(existingDate, newDate)) {
+          return this.historyRepository.save(newHistory);
+        }
       }
-
-      // if (channel?.recordHistory === 1) {
-      // }
+    } else {
+      console.log("Pause History");
+      return "This channel doesn't have watch history turned on.";
     }
-
-    return "This channel doesn't have watch history turned on.";
   }
 
 
