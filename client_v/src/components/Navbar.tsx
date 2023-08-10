@@ -219,7 +219,7 @@ const Navbar = () => {
                   src={currentChannel?.logoUrl}
                   alt={currentChannel?.channelName}
                   onClick={handleDropdownToggle}
-                  className="object-contain rounded-full cursor-pointer w-10 h-10"
+                  className="rounded-full cursor-pointer w-10 h-10 overflow-hidden object-cover"
                 />
                 {showLogIn && (
                   <div className={`dropdown absolute mt-2 bg-[#282828] rounded-md shadow-lg right-[10px]`}>

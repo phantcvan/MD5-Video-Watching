@@ -40,7 +40,7 @@ const VideoCompInfo = ({ video, home, description, editable, setEdited }: VideoC
   const channelMaxLength = curWid <= 480 ? "18" : curWid <= 1024 ? "35" : "70";
   const handleDeleteVideo = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/v1/videos/${video?.id}`)
+      await axios.delete(`http://localhost:5000/api/v1/videos/${video?.videoCode}`)
       notification.success({
         message: "Video deleted successfully",
         style: {
@@ -60,7 +60,7 @@ const VideoCompInfo = ({ video, home, description, editable, setEdited }: VideoC
 
   const handleCopy = () => {
     // setMessage("Link copied to clipboard");
-    navigator.clipboard.writeText(`${video?.videoCode}`)
+    navigator.clipboard.writeText(`http://localhost:5173/video/${video?.videoCode}`)
       .then(() => {
         notification.success({
           message: "Link copied to clipboard",

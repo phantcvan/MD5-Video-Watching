@@ -8,7 +8,7 @@ import { ChannelType, VideoType } from "../static/type";
 import { v4 as uuidv4 } from 'uuid';
 import { HiOutlineUserCircle } from "react-icons/hi2";
 import { GoHistory } from "react-icons/go";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import VideoComp from "../components/VideoComp";
 import { useEffect, useState } from "react";
 import HistoryLib from "../components/Library/HistoryLib";
@@ -32,6 +32,8 @@ const Library = () => {
   const [home, setHome] = useState(false);
   const [uploadCount, setUploadCount] = useState(0);
   const [likedCount, setLikedCount] = useState(0);
+  const allCookies = document.cookie;
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     const response = await signInWithPopup(auth, provider);
@@ -92,38 +94,63 @@ const Library = () => {
     }
   };
 
-  const fetchWatchedVideo = async () => {
+  const fetchWatchedVideo = async (token: string) => {
     try {
-      const [videosResponse, uploadResponse, reactionResponse] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/history/${currentChannel?.id}`),
-        axios.get(`http://localhost:5000/api/v1/videos/videosBelongChannel/${currentChannel?.id}`),
-        axios.get(`http://localhost:5000/api/v1/reaction/filterByChannelId/${currentChannel?.id}`),
-      ]);
-      // sắp xếp video
-      const videoSort = videosResponse?.data?.sort((a: HistoryProp, b: HistoryProp) =>
-        new Date(b.view_date).getTime() - new Date(a.view_date).getTime());
-      const uniqueVideosMap = new Map();
-      videoSort.forEach((item: HistoryProp) => {
-        if (!uniqueVideosMap.has(item.video.id) || item.view_date > uniqueVideosMap.get(item.video.id).view_date) {
-          uniqueVideosMap.set(item.video.id, item);
-        }
+      const response = await axios.get('http://localhost:5000/api/v1/auth', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      const sortedUniqueVideos = Array.from(uniqueVideosMap.values());
-      const extractedVideos = sortedUniqueVideos.map((item) => item.video);
-      setVideosHistory(extractedVideos);
-      // đếm số lượng video đã upload
-      setUploadCount(uploadResponse?.data.length)
-      // lấy về các reaction
-      // console.log("reactionResponse",reactionResponse?.data);
-      setVideosLiked(reactionResponse?.data)
-      setLikedCount(reactionResponse?.data?.length)
+      dispatch(setCurrentChannel(response?.data))
+      try {
+        const [videosResponse, uploadResponse, reactionResponse] = await Promise.all([
+          axios.get(`http://localhost:5000/api/v1/history/${response?.data?.id}`),
+          axios.get(`http://localhost:5000/api/v1/videos/videosBelongChannel/${response?.data?.id}`),
+          axios.get(`http://localhost:5000/api/v1/reaction/filterByChannelId/${response?.data?.id}`),
+        ]);
+        // sắp xếp video
+        const videoSort = videosResponse?.data?.sort((a: HistoryProp, b: HistoryProp) =>
+          new Date(b.view_date).getTime() - new Date(a.view_date).getTime());
+        const uniqueVideosMap = new Map();
+        videoSort.forEach((item: HistoryProp) => {
+          if (!uniqueVideosMap.has(item.video.id) || item.view_date > uniqueVideosMap.get(item.video.id).view_date) {
+            uniqueVideosMap.set(item.video.id, item);
+          }
+        });
+        const sortedUniqueVideos = Array.from(uniqueVideosMap.values());
+        const extractedVideos = sortedUniqueVideos.map((item) => item.video);
+        setVideosHistory(extractedVideos);
+        // đếm số lượng video đã upload
+        setUploadCount(uploadResponse?.data.length)
+        // lấy về các reaction
+        // console.log("reactionResponse",reactionResponse?.data);
+        setVideosLiked(reactionResponse?.data)
+        setLikedCount(reactionResponse?.data?.length)
+      } catch (error) {
+        console.error(error);
+      }
+
     } catch (error) {
-      console.error(error);
+      console.error('Error checking login:', error);
+      return false;
     }
   };
   useEffect(() => {
-    dispatch(setPickSidebar("Library"))
-    fetchWatchedVideo();
+    const cookieArray = allCookies.split(';');
+    let accessToken = '';
+    for (const cookie of cookieArray) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'access_token') {
+        accessToken = value;
+        fetchWatchedVideo(accessToken);
+        dispatch(setPickSidebar("History"))
+        break;
+      }
+    }
+    if (accessToken === '') {
+      navigate('/')
+    }
+
   }, []);
 
   // console.log("videosLiked", videosLiked);
@@ -135,10 +162,10 @@ const Library = () => {
         ? <div className="flex gap-3">
           <div className="flex flex-col basis-3/4 mr-5">
             <HistoryLib videosHistory={videosHistory} home={home} />
-            <LikedLib videosLiked={videosLiked} home={home} likedCount={likedCount}/>
+            <LikedLib videosLiked={videosLiked} home={home} likedCount={likedCount} />
           </div>
           <div className="flex flex-1">
-            <LibInfo uploadCount={uploadCount} likedCount={likedCount}/>
+            <LibInfo uploadCount={uploadCount} likedCount={likedCount} />
           </div>
         </div>
         : <div className='flex flex-col min-h-[calc(100%-53px)] items-center justify-center w-full'>

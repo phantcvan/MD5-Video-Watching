@@ -12,7 +12,7 @@ const Description = ({ setDesInput, canceled }: DesProp) => {
   console.log("canceled", canceled);
 
   useEffect(() => {
-    setChannelDes(currentChannel?.channelName)
+    setChannelDes(currentChannel?.about)
     if (canceled) {
       setChannelDes("")
     }
@@ -30,11 +30,11 @@ const Description = ({ setDesInput, canceled }: DesProp) => {
     <div className="flex flex-col my-3">
       <span className="text-yt-white font-semibold mb-2">Description</span>
       {channelDes
-        ? <textarea onChange={handleInput} rows={5}
-          placeholder='Tell viewers about your channel. Your description will appear in the About section of your channel and search results, among other places.'
+        ? <textarea onChange={handleInput} rows={5} value={channelDes}
           className='p-2 bg-yt-black border border-yt-light-5 text-yt-light-4 rounded-md 
-          focus:outline-none resize-none' />
-        : <textarea onChange={handleInput} rows={5} value={channelDes}
+        focus:outline-none resize-none' />
+        : <textarea onChange={handleInput} rows={5}
+          placeholder='Tell viewers about your channel. Your description will appear in the About section of your channel and search results, among other places.'
           className='p-2 bg-yt-black border border-yt-light-5 text-yt-light-4 rounded-md 
           focus:outline-none resize-none' />}
 

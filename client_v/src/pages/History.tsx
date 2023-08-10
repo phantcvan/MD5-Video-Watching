@@ -12,7 +12,7 @@ import { auth, provider } from "../firebase";
 import { getAllChannels, getCurrentChannel, setCurrentChannel } from '../slices/channelSlice';
 import { v4 as uuidv4 } from 'uuid';
 import ModalPauseHistory from '../components/ModalPauseHistory';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import VideoCompInfo from '../components/VideoCompInfo';
 import ModalDeleteHistory from '../components/ModalDeleteHistory';
 import { formatDate, getCurrentDate } from '../static/fn'
@@ -30,11 +30,16 @@ const History = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [openPauseModal, setOpenPauseModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [editable, setEditable] = useState(false);
+  const [edited, setEdited] = useState(false);
   const dispatch = useDispatch();
   const allChannels = useSelector(getAllChannels);
   const currentChannel = useSelector(getCurrentChannel);
   const [home, setHome] = useState(false);
   const [description, setDescription] = useState(true);
+  const allCookies = document.cookie;
+  const navigate = useNavigate()
+
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.keyCode === 13) {
@@ -57,24 +62,50 @@ const History = () => {
     if (keyword === '') setVideosFilter(videos)
   };
 
-  const fetchWatchedVideo = async () => {
+  const fetchWatchedVideo = async (token: string) => {
     try {
-      const [videosResponse] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/history/${currentChannel?.id}`),
-      ]);
+      const response = await axios.get('http://localhost:5000/api/v1/auth', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      dispatch(setCurrentChannel(response?.data))
 
-      const videoSort = videosResponse?.data?.sort((a: HistoryProp, b: HistoryProp) =>
-        (b.id) - (a.id));
-      setVideos(videoSort);
-      setVideosFilter(videoSort);
-      console.log("videosFilter", videoSort);
+      try {
+        const [videosResponse] = await Promise.all([
+          axios.get(`http://localhost:5000/api/v1/history/${response?.data?.id}`),
+        ]);
+        const videoSort = videosResponse?.data?.sort((a: HistoryProp, b: HistoryProp) =>
+          (b.id) - (a.id));
+        setVideos(videoSort);
+        setVideosFilter(videoSort);
+        console.log("videosFilter", videoSort);
+      } catch (error) {
+        console.error(error);
+      }
+
     } catch (error) {
-      console.error(error);
+      console.error('Error checking login:', error);
+      return false;
     }
-  };
+  }
+
   useEffect(() => {
-    dispatch(setPickSidebar("History"))
-    fetchWatchedVideo();
+    const cookieArray = allCookies.split(';');
+    let accessToken = '';
+    for (const cookie of cookieArray) {
+      const [name, value] = cookie.trim().split('=');
+      console.log(name, value);
+      if (name === 'access_token') {
+        accessToken = value;
+        fetchWatchedVideo(accessToken);
+        dispatch(setPickSidebar("History"))
+        break;
+      }
+    }
+    if (accessToken === '') {
+      navigate('/')
+    }
   }, []);
 
   const handleLogin = async () => {
@@ -169,7 +200,7 @@ const History = () => {
                   {isDifferentDate && <p className='text-lg font-semibold'>
                     {formatDate(video.view_date)}
                     {/* {video.view_date} */}
-                    </p>}
+                  </p>}
                   <div className='flex justify-between items-start my-3 gap-2 hide-scrollbar-x' >
                     <Link to={`/video/${video?.video.videoCode}`}>
                       <div className='w-[246px] aspect-video rounded-md cursor-pointer'>
@@ -179,7 +210,8 @@ const History = () => {
                       </div>
                     </Link>
                     <div className='flex flex-1 '>
-                      <VideoCompInfo video={video?.video} home={home} description={description} />
+                      <VideoCompInfo video={video?.video} home={home} description={description}
+                        editable={editable} setEdited={setEdited} />
                     </div>
                   </div>
                 </div>

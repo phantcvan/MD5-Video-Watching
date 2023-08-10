@@ -1,5 +1,4 @@
-import { BiLike, BiDislike } from "react-icons/bi";
-import { ChannelType, Cmt, VideoType } from "../../static/type";
+import { ChannelType, Cmt, CmtAct, VideoType } from "../../static/type";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import moment from "moment";
@@ -7,6 +6,7 @@ import { useSelector } from "react-redux";
 import { getCurrentChannel } from "../../slices/channelSlice";
 import { getCurrentDate } from "../../static/fn";
 import avatarDefault from "../../../public/assets/avatar_default.jpg";
+import { AiFillDislike, AiFillLike, AiOutlineDislike, AiOutlineLike } from "react-icons/ai";
 
 
 interface CommentProp {
@@ -21,18 +21,27 @@ const Comment = ({ item, video, setCommented, handleLogin }: CommentProp) => {
   const currentChannel = useSelector(getCurrentChannel);
   const [commentInput, setCommentInput] = useState("");
   const [existCmt, setExistCmt] = useState(false);
+  const [countLike, setCountLike] = useState(0);
+  const [userAction, setUserAction] = useState(-1);
 
-  // console.log("item", item);
+  console.log("item", item);
 
   const channelName = item?.channel.split("@")[0];
   const fetchChannelCmtData = async () => {
     try {
-      const [channelResponse,] = await Promise.all([
+      const [channelResponse, cmtActRes] = await Promise.all([
         axios.get(`http://localhost:5000/api/v1/channel/${item?.channel}`),
-
+        axios.get(`http://localhost:5000/api/vi/cmt-act/${item?.id}`),
       ]);
-      // console.log("channelResponse", channelResponse?.data);
+      console.log("cmtActRes", cmtActRes?.data);
       setChannelCmt(channelResponse?.data);
+      setCountLike(cmtActRes?.data?.length);
+      const userAct = cmtActRes?.data?.filter((act: CmtAct) => act.channelId === currentChannel?.id)
+      console.log(userAct);
+      if (userAct.length > 0) setUserAction(userAct[0].action)
+      else setUserAction(-1)
+
+
     } catch (error) {
       console.error(error);
     }
@@ -73,11 +82,21 @@ const Comment = ({ item, video, setCommented, handleLogin }: CommentProp) => {
     }
   };
 
+  const handleLikeCmt = async () => {
+
+  }
+
+  const handleDislikeCmt = async () => {
+
+  }
+
   return (
-    <div className="flex flex-row my-2 items-start">
-      <img src={channelCmt?.logoUrl} alt="profile"
-        className={`rounded-full mr-3 ${item?.level === 1 ? "h-12 w-12" : "h-7 w-7"}`} />
-      <div className="w-full">
+    <div className="flex flex-row my-2 items-start gap-3">
+      <div className={`${item?.level === 1 ? "h-12 w-12" : "h-7 w-7"} overflow-hidden object-cover`}>
+        <img src={channelCmt?.logoUrl} alt="profile"
+          className={`rounded-full overflow-hidden object-cover ${item?.level === 1 ? "h-12 w-12" : "h-7 w-7"}`} />
+      </div>
+      <div className="w-[90%]">
         <div className="flex items-center my-2">
           <p className="text-sm font-medium pr-2">@{channelName}</p>
           <p className="text-xs text-yt-gray">
@@ -88,35 +107,46 @@ const Comment = ({ item, video, setCommented, handleLogin }: CommentProp) => {
         <div className="flex justify-between items-center gap-4 w-36">
           <div className="flex py-2 justify-between w-24 items-center gap-2">
             <div className="flex items-center">
-              <BiLike size={35} className="cursor-pointer p-2 rounded-full hover:bg-yt-light-2" />
-              <p className="text-sm px-1 text-yt-gray">24</p>
+              {userAction === 1
+                ? <AiFillLike size={35} onClick={handleLikeCmt}
+                  className="cursor-pointer p-2 rounded-full hover:bg-yt-light-2" />
+                : <AiOutlineLike size={35} onClick={handleLikeCmt}
+                  className="cursor-pointer p-2 rounded-full hover:bg-yt-light-2" />}
+              <p className="text-sm px-1 text-yt-gray">{countLike}</p>
             </div>
             <div className="flex items-center">
-              <BiDislike size={34} className="cursor-pointer p-2 rounded-full hover:bg-yt-light-2" />
+              {userAction === 0
+                ? <AiFillDislike size={34} onClick={handleDislikeCmt}
+                  className="cursor-pointer p-2 rounded-full hover:bg-yt-light-2" />
+                : <AiOutlineDislike size={34} onClick={handleDislikeCmt}
+                  className="cursor-pointer p-2 rounded-full hover:bg-yt-light-2" />}
+
             </div>
           </div>
           <p className="text-sm py-2 px-4 hover:bg-yt-light-2 rounded-l-full rounded-r-full cursor-pointer"
-            onClick={() => setCmtReply(pre=>!pre)}>
+            onClick={() => setCmtReply(pre => !pre)}>
             {item.cmt_reply > 0 ? '' : 'Reply'}
           </p>
         </div>
         {cmtReply && (currentChannel ? (
           <form
             onSubmit={addCommentL2}
-            className="flex w-full pt-4 items-start"
+            className="flex w-full pt-4 items-start gap-3"
           >
-            <img
-              src={currentChannel?.logoUrl}
-              alt="profile"
-              className={`rounded-full mr-3 h-7 w-7}`}
-            />
+            <div className="h-7 w-7 overflow-hidden object-cover">
+              <img
+                src={currentChannel?.logoUrl}
+                alt="profile"
+                className={`rounded-full h-7 w-7 overflow-hidden object-cover`}
+              />
+            </div>
             <input
               value={commentInput}
               onChange={handleInputChange}
               type="text"
               placeholder="Add a reply..."
               className="bg-[transparent] border-b border-b-yt-light-black outline-none text-sm p-1
-               w-full"
+               w-[75%]"
             />
             <button
               className={`ml-1 p-2 rounded-r-full rounded-l-full
@@ -131,11 +161,14 @@ const Comment = ({ item, video, setCommented, handleLogin }: CommentProp) => {
           </form>
         ) : (
           <div className="flex w-full pt-4 items-start">
-            <img
-              src={avatarDefault}
-              alt="profile"
-              className="rounded-full mr-3 h-12 w-12"
-            />
+            <div>
+
+              <img
+                src={avatarDefault}
+                alt="profile"
+                className="rounded-full mr-3 h-7 w-7 overflow-hidden origin-center"
+              />
+            </div>
             <input
               onClick={handleLogin}
               type="text"

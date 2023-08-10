@@ -179,11 +179,13 @@ const VideoCmt = ({ video, forKid }: VideoComp) => {
               onSubmit={addCommentL1}
               className="flex w-full pt-4 items-start"
             >
-              <img
-                src={currentChannel?.logoUrl}
-                alt="profile"
-                className="rounded-full mr-3 h-12 w-12"
-              />
+              <div>
+                <img
+                  src={currentChannel?.logoUrl}
+                  alt="profile"
+                  className="rounded-full mr-3 h-12 w-12 overflow-hidden object-cover"
+                />
+              </div>
               <input
                 value={commentInput}
                 onChange={handleInputChange}
@@ -207,7 +209,7 @@ const VideoCmt = ({ video, forKid }: VideoComp) => {
               <img
                 src={avatarDefault}
                 alt="profile"
-                className="rounded-full mr-3 h-12 w-12"
+                className="rounded-full mr-3 h-12 w-12 overflow-hidden object-cover"
               />
               <input
                 onClick={handleLogin}
@@ -249,7 +251,7 @@ const VideoCmt = ({ video, forKid }: VideoComp) => {
                           </div>
 
                           {showCmtL2 && level2Comments.map((cmt2, index) => (
-                            <div className="w-full" key={index}>
+                            <div className="w-[95%]" key={index}>
                               <Comment item={cmt2} video={video} setCommented={setCommented} handleLogin={handleLogin} />
                             </div>
                           ))}

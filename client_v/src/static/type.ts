@@ -14,17 +14,17 @@ export interface ChannelType {
   email: string;
   channelName: string;
   joinDate: string;
-  logoUrl: string;
-  thumbnailM: string;
+  logoUrl: string | undefined;
+  thumbnailM: string | undefined;
   channelCode: string;
   recordHistory: number;
   about: string;
 }
 
 export interface ChannelEditType {
-  channelName: string | null;
-  logoUrl: string | null;
-  thumbnailM: string | null;
+  channelName: string;
+  logoUrl: string | undefined;
+  thumbnailM: string | undefined;
   about: string | null;
 }
 
@@ -51,4 +51,10 @@ export interface Cmt {
   cmt_date: string;
   cmt_reply: number;
   level: number;
+}
+
+export interface CmtAct {
+  id: number;
+  action: number;
+  channelId: number;
 }

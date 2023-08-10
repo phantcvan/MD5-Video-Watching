@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { AllTags, VideoType } from '../static/type';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getCurrentWidth } from '../slices/appSlice';
 import ReactPlayer from 'react-player';
 import VideoInfo from '../components/Video/VideoInfo';
@@ -10,7 +10,7 @@ import "../index.css"
 import VideoDescribe from '../components/Video/VideoDescribe';
 import VideoCmt from '../components/Video/VideoCmt';
 import Recommend from '../components/Video/Recommend';
-import { getCurrentChannel } from '../slices/channelSlice';
+import { getCurrentChannel, setCurrentChannel } from '../slices/channelSlice';
 import { getCurrentDate } from '../static/fn';
 
 
@@ -21,85 +21,57 @@ const Video = () => {
   const [tags, setTags] = useState<AllTags[]>([])
   const [forKid, setForKid] = useState(false);
   const currentChannel = useSelector(getCurrentChannel)
+  const allCookies = document.cookie;
+  const navigate = useNavigate();
+  const dispatch = useDispatch()
 
 
 
-  const updateView = async (view: number, videoId: number) => {
+  const fetchDataChangeId = async (token: string) => {
     try {
-      const updatedViews = view + 1;
-      const formattedDate = getCurrentDate();
-      console.log(formattedDate);
-      const newHistory = {
-        channelId: currentChannel?.id,
-        videoId: videoId,
-        view_date: formattedDate
-      }
-      const [response, historyResponse,] = await Promise.all([
-        axios.put(`http://localhost:5000/api/v1/videos/view/${videoCode}`,
-          { views: updatedViews }
-        ),
-        axios.post(`http://localhost:5000/api/v1/history`, newHistory),
-      ]);
-
-
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const fetchDataChangeId = async () => {
-    try {
-      const [
-        videoResponse,
-        // commentsResponse,
-        // actionsResponse,
-        // subscribesResponse,
-      ] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/videos/${videoCode}`),
-        //   axios.get(`http://localhost:5000/api/v1/comments/${id}`),
-        //   axios.get(`http://localhost:5000/api/v1/actions/${id}`),
-        //   axios.get(`http://localhost:5000/api/v1/subscribes`),
-      ]);
-      // console.log("videoResponse", videoResponse.data.views);
-
-      setVideo(videoResponse?.data);
-      // setComments(commentsResponse?.data.findCmt);
-      updateView(videoResponse?.data.views, videoResponse?.data?.id);
-      // setSubscribes(subscribesResponse?.data.subscribes);
-      // console.log("actionsResponse", actionsResponse?.data.actions);
-      // setCountLike(
-      //   actionsResponse?.data.actions.filter((action) => action.action === 1)
-      //     .length
-      // );
-      // setCountDislike(
-      //   actionsResponse?.data.actions.filter((action) => action.action === 0)
-      //     .length
-      // );
-      // if (user) {
-      //   setIsSubscribe(
-      //     subscribesResponse?.data.subscribes.some(
-      //       (item) =>
-      //         item.channel_id === videoResponse?.data.findVideo[0].channel_id &&
-      //         item.email === user?.email
-      //     )
-      //   );
-      //   setUserAction(
-      //     actionsResponse?.data.actions.find(
-      //       (action) => action.email === user?.email
-      //     ).action
-      //   );
-      // }
+      const response = await axios.get('http://localhost:5000/api/v1/auth', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      dispatch(setCurrentChannel(response?.data))
       try {
-        const [tagsResponse,] = await Promise.all([
-          axios.get(`http://localhost:5000/api/v1/tag/tagForVideo/${videoResponse?.data?.id}`),
+        const [
+          videoResponse,
+        ] = await Promise.all([
+          axios.get(`http://localhost:5000/api/v1/videos/${videoCode}`),
         ]);
-        const isForKid = tagsResponse?.data.find((tag: AllTags) => tag.tag === 'kid')
-        console.log("tagsResponse", isForKid);
-        if (isForKid) setForKid(true)
-        else setForKid(false)
-        setTags(tagsResponse?.data);
-      } catch (error) {
 
+        setVideo(videoResponse?.data);
+        // updateView(videoResponse?.data.views, videoResponse?.data?.id);
+        const updatedViews = videoResponse?.data.views + 1;
+        const formattedDate = getCurrentDate();
+        // console.log(formattedDate);
+        const newHistory = {
+          channelId: response?.data?.id,
+          videoId: videoResponse?.data?.id,
+          view_date: formattedDate
+        }
+        try {
+          const [tagsResponse, viewResponse, historyResponse,] = await Promise.all([
+            axios.get(`http://localhost:5000/api/v1/tag/tagForVideo/${videoResponse?.data?.id}`),
+            axios.put(`http://localhost:5000/api/v1/videos/view/${videoCode}`,
+              { views: updatedViews }
+            ),
+            axios.post(`http://localhost:5000/api/v1/history`, newHistory),
+
+
+          ]);
+          const isForKid = tagsResponse?.data.find((tag: AllTags) => tag.tag === 'kid')
+          console.log("tagsResponse", isForKid);
+          if (isForKid) setForKid(true)
+          else setForKid(false)
+          setTags(tagsResponse?.data);
+        } catch (error) {
+
+        }
+      } catch (error) {
+        console.error(error);
       }
     } catch (error) {
       console.error(error);
@@ -107,9 +79,22 @@ const Video = () => {
   };
 
   useEffect(() => {
-    fetchDataChangeId();
+    const cookieArray = allCookies.split(';');
+    let accessToken = '';
+    for (const cookie of cookieArray) {
+      const [name, value] = cookie.trim().split('=');
+      console.log(name, value);
+      if (name === 'access_token') {
+        accessToken = value;
+        fetchDataChangeId(accessToken);
+        break;
+      }
+    }
+    if (accessToken === '') {
+      navigate('/')
+    }
+
   }, [videoCode]);
-  // console.log("tags", tags);
 
 
   return (

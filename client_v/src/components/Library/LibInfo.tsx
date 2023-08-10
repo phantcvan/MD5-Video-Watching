@@ -14,7 +14,8 @@ const LibInfo = ({uploadCount, likedCount}:LibInfoProp) => {
   
   return (
     <div className='flex flex-1 flex-col items-center justify-center h-screen mt-[-50px] gap-2 mr-5'>
-      <img src={currentChannel?.logoUrl} className="w-20 h-20 rounded-full" />
+      <img src={currentChannel?.logoUrl} 
+      className="w-20 h-20 rounded-full overflow-hidden object-cover" />
       <span className="mb-6">{currentChannel?.channelName}</span>
       <div className="flex w-full justify-between items-center border-t border-t-yt-light-3 text-sm
         text-yt-light-5">

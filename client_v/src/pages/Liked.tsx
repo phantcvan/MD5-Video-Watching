@@ -1,9 +1,9 @@
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllChannels, getCurrentChannel } from "../slices/channelSlice";
+import { getAllChannels, getCurrentChannel, setCurrentChannel } from "../slices/channelSlice";
 import { useEffect, useState } from "react";
 import { VideoType } from "../static/type";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ReactPlayer from "react-player";
 import '../index.css'
 import VideoCompInfo from "../components/VideoCompInfo";
@@ -16,26 +16,54 @@ const Liked = () => {
   const [finalVideo, setFinalVideo] = useState<VideoType | null>(null);
   const [home, setHome] = useState(false);
   const [description, setDescription] = useState(false);
+  const [editable, setEditable] = useState(false);
+  const [edited, setEdited] = useState(false);
   const dispatch = useDispatch();
+  const allCookies = document.cookie;
+  const navigate = useNavigate();
 
 
-  const fetchLikedVideo = async () => {
+
+  const fetchLikedVideo = async (token: string) => {
     try {
-      const [reactionResponse] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/reaction/filterByChannelId/${currentChannel?.id}`),
-      ]);
-      // console.log(reactionResponse);
-      setVideosLiked(reactionResponse?.data);
-      if (reactionResponse?.data?.length > 0) {
-        setFinalVideo(reactionResponse?.data[0]);
+      const response = await axios.get('http://localhost:5000/api/v1/auth', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      dispatch(setCurrentChannel(response?.data))
+      try {
+        const [reactionResponse] = await Promise.all([
+          axios.get(`http://localhost:5000/api/v1/reaction/filterByChannelId/${response?.data?.id}`),
+        ]);
+        setVideosLiked(reactionResponse?.data);
+        if (reactionResponse?.data?.length > 0) {
+          setFinalVideo(reactionResponse?.data[0]);
+        }
+      } catch (error) {
+        console.error(error);
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error checking login:', error);
+      return false;
     }
   };
   useEffect(() => {
-    dispatch(setPickSidebar("Liked"))
-    fetchLikedVideo();
+    const cookieArray = allCookies.split(';');
+    let accessToken = '';
+    for (const cookie of cookieArray) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'access_token') {
+        accessToken = value;
+        dispatch(setPickSidebar("Liked"))
+        fetchLikedVideo(accessToken);
+        break;
+      }
+    }
+    if (accessToken === '') {
+      navigate('/')
+    }
+
   }, []);
   const backgroundStyle = {
     backgroundImage: `linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 1)), url(${finalVideo?.thumbnail})`,
@@ -85,7 +113,8 @@ const Liked = () => {
                         </div>
                       </Link>
                       <div className='flex flex-1 '>
-                        <VideoCompInfo video={video} home={home} description={description} />
+                        <VideoCompInfo video={video} home={home} description={description}
+                          editable={editable} setEdited={setEdited} />
                       </div>
                     </div>
                   </Link>

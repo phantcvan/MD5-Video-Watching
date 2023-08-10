@@ -1,4 +1,4 @@
-import { getShowMenu, setShowLogIn, setShowMenu } from '../slices/appSlice';
+import { getShowMenu, setPickSidebar, setShowLogIn, setShowMenu } from '../slices/appSlice';
 import { useDispatch, useSelector } from "react-redux";
 import "../index.css";
 import axios from 'axios';
@@ -27,6 +27,7 @@ const Home = () => {
   const allTags = useSelector(getAllTags);
   const [home, setHome] = useState(true);
   const [editable, setEditable] = useState(false);
+  const [edited, setEdited] = useState(false);
 
 
   // Khi không có user
@@ -146,6 +147,7 @@ const Home = () => {
     fetchData();
     // if (!lastPage) setStart(prev => prev + 1);
     dispatch(setShowMenu(showMenu));
+    dispatch(setPickSidebar("Home"))
     // if (currentChannel != null) {
     //   // fetchDataSubs();
     // }
@@ -206,7 +208,7 @@ const Home = () => {
             key={video.id}
           >
             <VideoComp
-              video={video} home={home} editable={editable}
+              video={video} home={home} editable={editable} setEdited={setEdited}
             />
           </div>
         ))}

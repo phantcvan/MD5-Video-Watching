@@ -7,7 +7,8 @@ import axios from 'axios';
 import Cover from '../components/EditInfo/Cover';
 import Name from '../components/EditInfo/Name';
 import Description from '../components/EditInfo/Description';
-import { ChannelEditType } from '../static/type';
+import { ChannelEditType, ChannelType } from '../static/type';
+import { notification } from 'antd';
 
 
 const EditChannelInfo = () => {
@@ -77,15 +78,30 @@ const EditChannelInfo = () => {
       const [updateResponse] = await Promise.all([
         axios.patch(`http://localhost:5000/api/v1/channel/updateInfo/${currentChannel?.id}`, updateData),
       ]);
-      console.log("updateResponse", updateResponse);
-      const newCurrentChannel = currentChannel;
-      newCurrentChannel.channelName = updateData.channelName;
-      newCurrentChannel.about = updateData.about;
-      newCurrentChannel.logoUrl = updateData.logoUrl;
-      newCurrentChannel.thumbnailM = updateData.thumbnailM;
-      dispatch(setCurrentChannel(newCurrentChannel));
+
       if (updateResponse.data.status === 200) {
-        console.log('Update Channel Successfully');
+        const newCurrentChannel: ChannelType = {
+          id: currentChannel.id,
+          email: currentChannel.email,
+          channelName: updateData.channelName,
+          joinDate: currentChannel.joinDate,
+          logoUrl: updateData.logoUrl,
+          thumbnailM: updateData.logoUrl,
+          channelCode: currentChannel.channelCode,
+          recordHistory: currentChannel.recordHistory,
+          about: currentChannel.about
+        }
+        console.log('newCurrentChannel', newCurrentChannel);
+        dispatch(setCurrentChannel(newCurrentChannel));
+        notification.success({
+          message: "Update channel information successfully",
+          style: {
+            top: 95,
+            zIndex: 50
+          },
+          duration: 2,
+        });
+        navigate(`/channel/${currentChannel?.channelCode}`)
       }
     } catch (error) {
       console.log(error);

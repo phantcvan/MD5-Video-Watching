@@ -66,15 +66,29 @@ export class ReactionService {
   }
 
   async update(updateReactionDto: UpdateReactionDto) {
-    const { videoId, channelId, action } = updateReactionDto
+    const { videoId, channelId, action } = updateReactionDto;
+    const channel = await this.channelRepository.findOne({
+      where: { id: channelId }
+    })
+    const video = await this.videoRepository.findOne({
+      where: { id: videoId }
+    })
     const findReaction = await this.reactionRepository.findOne({
       where: {
         channel: { id: channelId },
         video: { id: videoId },
       },
     });
-    // console.log("update", findReaction)
-    return `This action updates a #${videoId} reaction`;
+    if (findReaction && video && channel){
+      const newReact = {
+        action,
+        video,
+        channel
+      }
+      return await this.reactionRepository.update(findReaction.id, newReact)
+    } else {
+      throw new NotFoundException('Reaction Not Found')
+    }
   }
 
   async remove(videoId: number, channelId: number) {

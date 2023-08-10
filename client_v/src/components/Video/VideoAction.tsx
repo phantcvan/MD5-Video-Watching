@@ -1,27 +1,116 @@
 import { useSelector } from "react-redux";
 import { VideoType } from "../../static/type";
 import { getUser } from "../../slices/userSlice";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AiFillDislike, AiFillLike, AiOutlineDislike, AiOutlineLike } from "react-icons/ai";
 import { handleNumber } from "../../static/fn";
 import { RiShareForwardLine } from "react-icons/ri";
 import { notification } from "antd";
 import { getCurrentChannel } from "../../slices/channelSlice";
+import axios from "axios";
 
 interface VideoComp {
   video: VideoType | null
 }
 
 const VideoAction = ({ video }: VideoComp) => {
+  console.log("video", video);
+
   const currentChannel = useSelector(getCurrentChannel);
   const [userAction, setUserAction] = useState(-1);
   const [countLike, setCountLike] = useState(0);
-  const [countDislike, setCountDislike] = useState(0);
+
+  const fetchReactionData = async () => {
+    try {
+      const [myReactionResponse, allLikeReaction] = await Promise.all([
+        axios.get(`http://localhost:5000/api/v1/reaction/reactionOfVideo/${video?.id}/${currentChannel?.id}`),
+        axios.get(`http://localhost:5000/api/v1/reaction/allLike/${video?.id}`)
+
+      ])
+      console.log("userAction RES", allLikeReaction);
+      if (myReactionResponse?.data) setUserAction(myReactionResponse?.data?.action)
+      setCountLike(allLikeReaction?.data)
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  useEffect(() => {
+    fetchReactionData()
+
+  }, [video])
+  console.log("userAction", userAction);
 
   const handleLikeClick = async () => {
-
+    if (userAction === 0) {// nêu người dùng đang dislike -> update reaction
+      try {
+        const [likeResponse] = await Promise.all([
+          axios.put(`http://localhost:5000/api/v1/reaction`, {
+            videoId: video?.id,
+            channelId: currentChannel?.id,
+            action: 1
+          })
+        ])
+        setUserAction(1);
+        setCountLike(pre => (pre + 1))
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (userAction === 1) { // nếu người dùng đang like -> delete
+      try {
+        await axios.delete(`http://localhost:5000/api/v1/reaction/${video?.id}/${currentChannel?.id}`)
+        setUserAction(-1);
+        setCountLike(pre => (pre - 1))
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (userAction === -1) { // nếu người dùng chưa like/dislike ->create
+      try {
+        await axios.post(`http://localhost:5000/api/v1/reaction`,
+          {
+            videoId: video?.id,
+            channelId: currentChannel?.id,
+            action: 1
+          })
+        setUserAction(1);
+        setCountLike(pre => (pre + 1))
+      } catch (error) {
+        console.log(error);
+      }
+    }
   }
   const handleDislikeClick = async () => {
+    if (userAction === 1) {// nêu người dùng đang like -> update reaction
+      try {
+        await axios.put(`http://localhost:5000/api/v1/reaction`, {
+          videoId: video?.id,
+          channelId: currentChannel?.id,
+          action: 0
+        })
+        setUserAction(0);
+        setCountLike(pre => (pre - 1))
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (userAction === 0) { // nếu người dùng đang dislike -> delete
+      try {
+        await axios.delete(`http://localhost:5000/api/v1/reaction/${video?.id}/${currentChannel?.id}`)
+        setUserAction(-1);
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (userAction === -1) { // nếu người dùng chưa like/dislike ->create
+      try {
+        await axios.post(`http://localhost:5000/api/v1/reaction`,
+          {
+            videoId: video?.id,
+            channelId: currentChannel?.id,
+            action: 0
+          })
+        setUserAction(0);
+      } catch (error) {
+        console.log(error);
+      }
+    }
 
   }
 

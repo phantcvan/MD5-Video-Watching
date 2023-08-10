@@ -24,6 +24,8 @@ const ChannelSearch = ({ channelSearch }: ChannelSearchProp) => {
         axios.get(`http://localhost:5000/api/v1/subscribe/subscribed/${currentChannel?.id}`),
         axios.get(`http://localhost:5000/api/v1/subscribe/subscriber/${channelSearch?.id}`),
       ])
+      console.log(subscriberResponse);
+      
       const check = subscribedResponse?.data.some((channel: ChannelType) => channel.channelCode === channelSearch?.channelCode)
       setIsSubscribe(check);
       setSubscribers(subscriberResponse?.data?.length);

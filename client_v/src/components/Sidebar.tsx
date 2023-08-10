@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { CategoryItems } from "../static/data";
 import { Link } from "react-router-dom";
-import { getAllChannels, getChannelsSub, getCurrentChannel, setCurrentChannel } from '../slices/channelSlice';
+import { getAllChannels, getChannelsSub, getCurrentChannel, setChannelsSub, setCurrentChannel } from '../slices/channelSlice';
 import { setUser, getUser } from "../slices/userSlice";
 import { signInWithPopup, signOut } from "firebase/auth";
 import { auth, provider } from "../firebase";
@@ -15,7 +15,7 @@ import { SiYoutubegaming } from "react-icons/si";
 import { BsNewspaper } from "react-icons/bs";
 import { CiTrophy } from "react-icons/ci";
 import { ChannelType } from "../static/type";
-import { getPickSidebar, setPickSidebar, setShowMenu } from "../slices/appSlice";
+import { getPickSidebar, getShowMenu, setPickSidebar, setShowMenu } from "../slices/appSlice";
 import { GoHistory } from "react-icons/go";
 import { RiVideoFill } from "react-icons/ri";
 import "../index.css";
@@ -36,10 +36,8 @@ const Sidebar = ({ }) => {
   const myChannelId = currentChannel?.channelCode;
   const myChannelName = currentChannel?.channelName;
   const allChannels = useSelector(getAllChannels);
-  const [subscribes, setSubscribes] = useState<ChannelType[]>([]);
+  const subscribes = useSelector(getChannelsSub);
   const pick = useSelector(getPickSidebar);
-  // const channelsSub = useSelector(getChannelsSub);
-  // let SideBarItems: SideBarType;
 
   // const channel_id = allChannels?.find((e, i) => e.email === user.email)?.channel_id;
 
@@ -108,19 +106,8 @@ const Sidebar = ({ }) => {
       const [subscribesResponse] = await Promise.all([
         axios.get(`http://localhost:5000/api/v1/subscribe/subscribed/${currentChannel?.id}`),
       ]);
-      console.log(subscribesResponse?.data);
-      setSubscribes(subscribesResponse?.data);
-      // const newestVideos = [];
-      // if (subscribesResponse?.data.length > 0) {
-      //   const promises = subscribesResponse?.data.reverse().map(async (channel: ChannelType) => {
-      //     const response = await axios.get(`http://localhost:5000/api/v1/videos/newest/${channel.id}`);
-      //     return response?.data;
-      //   });
-      //   newestVideos.push(...(await Promise.all(promises)));
-      //   const flattenedVideos = newestVideos.flat();
-      //   // console.log(flattenedVideos);
-      //   setSubscribes(flattenedVideos)
-      // }
+      dispatch(setChannelsSub(subscribesResponse?.data))
+
     } catch (error) {
       console.error(error);
     }
@@ -218,17 +205,17 @@ const Sidebar = ({ }) => {
 
             </div>
           }
-          <hr className="text-yt-light-black my-2" />
 
 
         </div>
         {subscribes.length > 0
           && <>
+            <hr className="text-yt-light-black my-2" />
             <div className="mb-4">
-              {subscribes.map((item, index) => (
-                <Link to={`/channel/${item.channelCode}`} key={index}>
+              {subscribes.map((item: ChannelType) => (
+                <Link to={`/channel/${item?.channelCode}`} key={item?.id}>
                   <div
-                    key={index}
+                    key={item?.id}
                     className={`h-10 flex justify-start px-3 rounded-xl items-center cursor-pointer my-1
                     hover:bg-yt-light-black ${item.channelName === pick ? "bg-yt-light-black" : "bg-yt-black"
                       }`}
