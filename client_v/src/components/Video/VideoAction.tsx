@@ -14,7 +14,7 @@ interface VideoComp {
 }
 
 const VideoAction = ({ video }: VideoComp) => {
-  console.log("video", video);
+  // console.log("video", video);
 
   const currentChannel = useSelector(getCurrentChannel);
   const [userAction, setUserAction] = useState(-1);
@@ -27,7 +27,7 @@ const VideoAction = ({ video }: VideoComp) => {
         axios.get(`http://localhost:5000/api/v1/reaction/allLike/${video?.id}`)
 
       ])
-      console.log("userAction RES", allLikeReaction);
+      // console.log("userAction RES", allLikeReaction);
       if (myReactionResponse?.data) setUserAction(myReactionResponse?.data?.action)
       setCountLike(allLikeReaction?.data)
     } catch (error) {
@@ -38,7 +38,7 @@ const VideoAction = ({ video }: VideoComp) => {
     fetchReactionData()
 
   }, [video])
-  console.log("userAction", userAction);
+  // console.log("userAction", userAction);
 
   const handleLikeClick = async () => {
     if (userAction === 0) {// nêu người dùng đang dislike -> update reaction
@@ -50,29 +50,35 @@ const VideoAction = ({ video }: VideoComp) => {
             action: 1
           })
         ])
-        setUserAction(1);
-        setCountLike(pre => (pre + 1))
+        if (likeResponse?.status===200){
+          setUserAction(1);
+          setCountLike(pre => (pre + 1))
+        }
       } catch (error) {
         console.log(error);
       }
     } else if (userAction === 1) { // nếu người dùng đang like -> delete
       try {
-        await axios.delete(`http://localhost:5000/api/v1/reaction/${video?.id}/${currentChannel?.id}`)
-        setUserAction(-1);
-        setCountLike(pre => (pre - 1))
+        const likeResponse = await axios.delete(`http://localhost:5000/api/v1/reaction/${video?.id}/${currentChannel?.id}`)
+        if (likeResponse?.status===200){
+          setUserAction(-1);
+          setCountLike(pre => (pre - 1))
+        }
       } catch (error) {
         console.log(error);
       }
     } else if (userAction === -1) { // nếu người dùng chưa like/dislike ->create
       try {
-        await axios.post(`http://localhost:5000/api/v1/reaction`,
+        const likeResponse = await axios.post(`http://localhost:5000/api/v1/reaction`,
           {
             videoId: video?.id,
             channelId: currentChannel?.id,
             action: 1
           })
-        setUserAction(1);
-        setCountLike(pre => (pre + 1))
+          if (likeResponse?.status===201){
+            setUserAction(1);
+            setCountLike(pre => (pre + 1))
+          }
       } catch (error) {
         console.log(error);
       }

@@ -24,24 +24,23 @@ const Comment = ({ item, video, setCommented, handleLogin }: CommentProp) => {
   const [countLike, setCountLike] = useState(0);
   const [userAction, setUserAction] = useState(-1);
 
-  console.log("item", item);
+  // console.log("userAction", userAction);
 
   const channelName = item?.channel.split("@")[0];
   const fetchChannelCmtData = async () => {
     try {
       const [channelResponse, cmtActRes] = await Promise.all([
         axios.get(`http://localhost:5000/api/v1/channel/${item?.channel}`),
-        axios.get(`http://localhost:5000/api/vi/cmt-act/${item?.id}`),
+        axios.get(`http://localhost:5000/api/v1/cmt-act/${item?.id}`),
       ]);
-      console.log("cmtActRes", cmtActRes?.data);
+      // console.log("cmtActRes", cmtActRes?.data);
       setChannelCmt(channelResponse?.data);
-      setCountLike(cmtActRes?.data?.length);
+      const like = cmtActRes?.data?.filter((act: CmtAct) => act.action === 1)
+      setCountLike(like?.length);
       const userAct = cmtActRes?.data?.filter((act: CmtAct) => act.channelId === currentChannel?.id)
-      console.log(userAct);
+      // console.log(userAct);
       if (userAct.length > 0) setUserAction(userAct[0].action)
       else setUserAction(-1)
-
-
     } catch (error) {
       console.error(error);
     }
@@ -83,11 +82,89 @@ const Comment = ({ item, video, setCommented, handleLogin }: CommentProp) => {
   };
 
   const handleLikeCmt = async () => {
-
+    if (userAction === 0) { //nếu đang dislike ->update
+      try {
+        const actionRes = await axios.put(`http://localhost:5000/api/v1/cmt-act`, {
+          commentId: item?.id,
+          channelId: currentChannel?.id,
+          action: 1
+        })
+        if (actionRes.status === 200) {
+          setUserAction(1);
+          setCountLike(pre => (pre + 1))
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (userAction === 1) { //nếu đang like -> remove
+      try {
+        const actionRes = await axios.delete(`http://localhost:5000/api/v1/cmt-act/${item?.id}/${currentChannel?.id}`)
+        // console.log(actionRes);
+        if (actionRes.status === 200) {
+          setUserAction(-1);
+          setCountLike(pre => (pre - 1))
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (userAction === -1) { //nếu chưa like/dislike ->create
+      try {
+        const actionRes = await axios.post(`http://localhost:5000/api/v1/cmt-act`, {
+          commentId: item?.id,
+          channelId: currentChannel?.id,
+          action: 1
+        })
+        if (actionRes.status === 201) {
+          setUserAction(1);
+          setCountLike(pre => (pre + 1))
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
   }
 
   const handleDislikeCmt = async () => {
-
+    if (userAction === 1) { //nếu đang like ->update
+      try {
+        const actionRes = await axios.put(`http://localhost:5000/api/v1/cmt-act`, {
+          commentId: item?.id,
+          channelId: currentChannel?.id,
+          action: 0
+        })
+        // console.log("dislike", actionRes);
+        if (actionRes.status === 200) {
+          setUserAction(0);
+          setCountLike(pre => (pre - 1))
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (userAction === 0) { //nếu đang dislike -> remove
+      try {
+        const actionRes = await axios.delete(`http://localhost:5000/api/v1/cmt-act/${item?.id}/${currentChannel?.id}`)
+        // console.log("dislike", actionRes);
+        if (actionRes.status === 200) {
+          setUserAction(-1);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (userAction === -1) { //nếu chưa like/dislike ->create
+      try {
+        const actionRes = await axios.post(`http://localhost:5000/api/v1/cmt-act`, {
+          commentId: item?.id,
+          channelId: currentChannel?.id,
+          action: 0
+        })
+        if (actionRes.status === 201) {
+          // console.log("dislike", actionRes);
+          setUserAction(0);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
   }
 
   return (

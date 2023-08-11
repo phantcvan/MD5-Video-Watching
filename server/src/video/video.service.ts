@@ -6,15 +6,27 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan, MoreThanOrEqual, FindManyOptions } from 'typeorm';
 import { Video } from './entities/video.entity';
 import { ChannelService } from 'src/channel/channel.service';
+import { Channel } from 'src/channel/entities/channel.entity';
 
 @Injectable()
 export class VideoService {
   constructor(
     @InjectRepository(Video) private videoRepository: Repository<Video>,
+    @InjectRepository(Channel) private channelRepository: Repository<Channel>,
     private channelService: ChannelService,
   ) { }
-  create(createVideoDto: CreateVideoDto) {
-    return 'This action adds a new video';
+  async create(createVideoDto: CreateVideoDto) {
+    const { videoCode, videoUrl, views, title, description, thumbnail, upload_date, channelId } = createVideoDto;
+    // console.log(createVideoDto);
+    const channel = await this.channelRepository.findOne({ where: { id: channelId } });
+    const newVideo = this.videoRepository.create({
+      videoCode, videoUrl, views, title, description, thumbnail, upload_date, channel
+    })
+    if (channel) {
+      return this.videoRepository.save(newVideo)
+    } else {
+      throw new NotFoundException('Channel not found')
+    }
   }
 
   async findAll(start: string): Promise<any> {

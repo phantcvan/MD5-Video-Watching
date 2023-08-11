@@ -7,7 +7,7 @@ import { Link, createSearchParams } from 'react-router-dom';
 import { setSearchQuery } from '../slices/videoSlice';
 import { BiVideoPlus } from "react-icons/bi";
 import { getUser, logout, setUser } from '../slices/userSlice';
-import UploadVideo from './UploadVideo';
+import UploadVideo from './Upload/UploadVideo';
 import { signInWithPopup, signOut } from "firebase/auth";
 import { auth, provider } from "../firebase";
 import { BsPersonCircle } from "react-icons/bs";

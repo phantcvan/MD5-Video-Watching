@@ -9,6 +9,7 @@ import Name from '../components/EditInfo/Name';
 import Description from '../components/EditInfo/Description';
 import { ChannelEditType, ChannelType } from '../static/type';
 import { notification } from 'antd';
+import { Link } from 'react-router-dom';
 
 
 const EditChannelInfo = () => {
@@ -122,7 +123,11 @@ const EditChannelInfo = () => {
       <div className='flex justify-between items-center'>
         <span className='text-2xl text-yt-white font-semibold w-2/3'>Channel customization</span>
         <div className='flex flex-1 gap-5'>
-          <span className='text-yt-blue cursor-pointer px-2 py-1 text-[15px] font-semibold'>VIEW CHANNEL</span>
+          <Link to={`/channel/${currentChannel?.channelCode}`}>
+            <span className='text-yt-blue cursor-pointer px-2 py-1 text-[15px] font-semibold'>
+              VIEW CHANNEL
+            </span>
+          </Link>
           <span className={`px-2 py-1 font-semibold text-[15px]
           ${sthChange ? " text-yt-blue" : "text-yt-light-6"}`}
             onClick={handleCancel}>

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,8 +19,19 @@ export class TagService {
     @InjectRepository(Channel) private channelRepository: Repository<Channel>
   ) { }
 
-  create(createTagDto: CreateTagDto) {
-    return 'This action adds a new tag';
+  async create(createTagDto: CreateTagDto) {
+    const { tag, videoCode } = createTagDto;
+    // console.log("CreateTag", createTagDto);
+    const video = await this.videoRepository.findOne({ where: { videoCode } });
+    const newTag = this.tagRepository.create({
+      tag,
+      video
+    })
+    if (video) {
+      return this.tagRepository.save(newTag);
+    } else {
+      throw new NotFoundException('Video Not Found')
+    }
   }
 
   async findAll(): Promise<{ tag: string; }[]> {
