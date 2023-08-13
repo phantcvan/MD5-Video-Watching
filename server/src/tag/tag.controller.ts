@@ -1,13 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards } from '@nestjs/common';
 import { TagService } from './tag.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { Video } from '../video/entities/video.entity';
 import { Tag } from './entities/tag.entity';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('api/v1/tag')
 export class TagController {
-  constructor(private readonly tagService: TagService) {}
+  constructor(private readonly tagService: TagService) { }
 
   @Post()
   create(@Body() createTagDto: CreateTagDto) {
@@ -33,12 +34,14 @@ export class TagController {
   async findAllTagBelongVideo(@Param('videoId') videoId: string): Promise<Tag[]> {
     return this.tagService.findAllTagBelongVideo(+videoId);
   }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTagDto: UpdateTagDto) {
-    return this.tagService.update(+id, updateTagDto);
+  
+  @UseGuards(AuthGuard)
+  @Put(':videoId')
+  update(@Param('videoId') videoId: string, @Body() updateTagDto: UpdateTagDto) {
+    return this.tagService.update(+videoId, updateTagDto);
   }
-
+  
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.tagService.remove(+id);

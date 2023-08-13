@@ -5,9 +5,10 @@ import { Tag } from './entities/tag.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Video } from '../video/entities/video.entity';
 import { Channel } from '../channel/entities/channel.entity';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Tag, Video, Channel]),],
+  imports: [TypeOrmModule.forFeature([Tag, Video, Channel]), JwtModule],
   controllers: [TagController],
   providers: [TagService]
 })

@@ -210,6 +210,19 @@ export class VideoService {
       relations: { channel: true },
     });
   }
+
+  async searchTitle(keyword: string) {
+    const results = await this.videoRepository
+      .createQueryBuilder('video')
+      .select(['video.videoCode', 'video.title']) // Chọn cả videoCode và title
+      .where('video.title LIKE :keyword', { keyword: `%${keyword}%` })
+      .getMany();
+
+    return results.map(video => ({
+      videoCode: video.videoCode,
+      title: video.title,
+    }));
+  }
   // lấy video có videoId=id
   findVideobyId(id: number) {
     return this.videoRepository.findOne({
@@ -234,8 +247,13 @@ export class VideoService {
       .getMany();
   }
 
-  update(videoCode: string, updateVideoDto: UpdateVideoDto) {
-    return `This action updates a #${videoCode} video`;
+  async update(id: number, updateVideoDto: UpdateVideoDto) {
+    const video = await this.videoRepository.findOne({ where: { id } })
+    if (video) {
+      return await this.videoRepository.update(id, updateVideoDto);
+    } else {
+      return `Video not found`;
+    }
   }
 
 

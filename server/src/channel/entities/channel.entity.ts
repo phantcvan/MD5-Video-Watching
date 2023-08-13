@@ -5,6 +5,7 @@ import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, One
 import { Reaction } from 'src/reaction/entities/reaction.entity';
 import { Subscribe } from 'src/subscribe/entities/subscribe.entity';
 import { CmtAct } from 'src/cmt_act/entities/cmt_act.entity';
+import { Search } from 'src/search/entities/search.entity';
 
 @Entity()
 export class Channel {
@@ -53,6 +54,8 @@ export class Channel {
   @OneToMany(() => CmtAct, (cmtAct) => cmtAct.channel)
   cmtAct: CmtAct[]
 
+  @OneToMany(()=>Search, (search)=>search.channel)
+  search: Search[]
 }
 
 

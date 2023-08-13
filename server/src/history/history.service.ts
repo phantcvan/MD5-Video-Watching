@@ -70,13 +70,6 @@ export class HistoryService {
   }
 
 
-
-
-
-
-
-
-
   findAll() {
     return `This action returns all history`;
   }

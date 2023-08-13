@@ -123,11 +123,16 @@ export class TagService {
   }
 
 
-  update(id: number, updateTagDto: UpdateTagDto) {
-    return `This action updates a #${id} tag`;
+  async update(videoId: number, updateTagDto: UpdateTagDto) {
+    const { tag } = updateTagDto;
+    const findTags = await this.tagRepository.find({ where: { video: { id: videoId } } });
+    const video = await this.videoRepository.findOne({ where: { id: videoId } });
+    const newTag = this.tagRepository.create({ tag, video });
+    return await this.tagRepository.save(newTag);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} tag`;
+  async remove(videoId: number) {
+    const findTags = await this.tagRepository.find({ where: { video: { id: videoId } } });
+    return await this.tagRepository.remove(findTags);
   }
 }
