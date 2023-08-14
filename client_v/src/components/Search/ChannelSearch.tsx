@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { ChannelType } from "../../static/type"
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { getCurrentChannel } from "../../slices/channelSlice";
+import { getChannelsSub, getCurrentChannel, setChannelsSub } from "../../slices/channelSlice";
 import { handleNumber } from "../../static/fn";
 import { FaRegBell } from "react-icons/fa";
 import { useNavigate } from "react-router";
-import { Tooltip } from "antd";
+import { Tooltip, notification } from "antd";
 
 interface ChannelSearchProp {
   channelSearch: ChannelType | null
@@ -17,28 +17,73 @@ const ChannelSearch = ({ channelSearch }: ChannelSearchProp) => {
   const dispatch = useDispatch();
   const currentChannel = useSelector(getCurrentChannel);
   const navigate = useNavigate();
+  const channelsSub = useSelector(getChannelsSub);
+
 
   const fetchChannelData = async () => {
     try {
-      const [subscribedResponse, subscriberResponse] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/subscribe/subscribed/${currentChannel?.id}`),
-        axios.get(`http://localhost:5000/api/v1/subscribe/subscriber/${channelSearch?.id}`),
-      ])
-      console.log(subscriberResponse);
-      
-      const check = subscribedResponse?.data.some((channel: ChannelType) => channel.channelCode === channelSearch?.channelCode)
-      setIsSubscribe(check);
+      if (currentChannel) {
+        const subscribedResponse = await axios.get(`http://localhost:5000/api/v1/subscribe/subscribed/${currentChannel?.id}`);
+        const isSubscribed = subscribedResponse?.data.some((channel: ChannelType) => channel.channelCode === channelSearch?.channelCode);
+        setIsSubscribe(isSubscribed);
+      }
+  
+      const subscriberResponse = await axios.get(`http://localhost:5000/api/v1/subscribe/subscriber/${channelSearch?.id}`);
       setSubscribers(subscriberResponse?.data?.length);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
-  }
+  };
+  
   useEffect(() => {
     fetchChannelData()
   }, [channelSearch])
 
-  const handleAddSubscribe = () => {
-
+  const handleAddSubscribe = async () => {
+    if (!currentChannel) {
+      notification.warning({
+        message: "Sign in to subscribe to this channel.",
+        style: {
+          top: 95,
+          zIndex: 50
+        },
+        duration: 2,
+      });
+    } else {
+      if (isSubscribe) {
+        try {
+          const [subscribeResponse] = await Promise.all([
+            axios.delete(`http://localhost:5000/api/v1/subscribe/${currentChannel?.id}/${channelSearch?.id}`),
+  
+          ])
+          if (subscribeResponse?.status === 200) {
+            const updatedChannelsSub = channelsSub.filter((ch: ChannelType) => ch.id !== channelSearch?.id)
+            dispatch(setChannelsSub(updatedChannelsSub))
+            setIsSubscribe(false)
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      } else {
+        try {
+          const [subscribeResponse, channelSubResponse] = await Promise.all([
+            axios.post(`http://localhost:5000/api/v1/subscribe/`, {
+              userId: currentChannel?.id,
+              subscribed_id: channelSearch?.id
+            }),
+            axios.get(`http://localhost:5000/api/v1/channel/findChannel/${channelSearch?.id}`)
+          ])
+          if (subscribeResponse?.status === 201 && channelSubResponse?.status === 200) {
+            const newSub = channelSubResponse?.data
+            const updatedChannelsSub = [...channelsSub, newSub]
+            dispatch(setChannelsSub(updatedChannelsSub))
+            setIsSubscribe(true)
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    }
   }
 
   return (

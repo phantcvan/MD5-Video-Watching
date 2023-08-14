@@ -7,6 +7,7 @@ import { getCurrentChannel } from "../../slices/channelSlice";
 import { getCurrentDate } from "../../static/fn";
 import avatarDefault from "../../../public/assets/avatar_default.jpg";
 import { AiFillDislike, AiFillLike, AiOutlineDislike, AiOutlineLike } from "react-icons/ai";
+import { notification } from "antd";
 
 
 interface CommentProp {
@@ -58,7 +59,7 @@ const Comment = ({ item, video, setCommented, handleLogin }: CommentProp) => {
     e.preventDefault();
     const currentDate = getCurrentDate();
     if (!commentInput) {
-      // setExistCmt(false);
+      setExistCmt(false);
     } else {
       const newComment = {
         channel: currentChannel.email,
@@ -82,88 +83,106 @@ const Comment = ({ item, video, setCommented, handleLogin }: CommentProp) => {
   };
 
   const handleLikeCmt = async () => {
-    if (userAction === 0) { //nếu đang dislike ->update
-      try {
-        const actionRes = await axios.put(`http://localhost:5000/api/v1/cmt-act`, {
-          commentId: item?.id,
-          channelId: currentChannel?.id,
-          action: 1
-        })
-        if (actionRes.status === 200) {
-          setUserAction(1);
-          setCountLike(pre => (pre + 1))
+    if (currentChannel) {
+      if (userAction === 0) { //nếu đang dislike ->update
+        try {
+          const actionRes = await axios.put(`http://localhost:5000/api/v1/cmt-act`, {
+            commentId: item?.id,
+            channelId: currentChannel?.id,
+            action: 1
+          })
+          if (actionRes.status === 200) {
+            setUserAction(1);
+            setCountLike(pre => (pre + 1))
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (userAction === 1) { //nếu đang like -> remove
-      try {
-        const actionRes = await axios.delete(`http://localhost:5000/api/v1/cmt-act/${item?.id}/${currentChannel?.id}`)
-        // console.log(actionRes);
-        if (actionRes.status === 200) {
-          setUserAction(-1);
-          setCountLike(pre => (pre - 1))
+      } else if (userAction === 1) { //nếu đang like -> remove
+        try {
+          const actionRes = await axios.delete(`http://localhost:5000/api/v1/cmt-act/${item?.id}/${currentChannel?.id}`)
+          // console.log(actionRes);
+          if (actionRes.status === 200) {
+            setUserAction(-1);
+            setCountLike(pre => (pre - 1))
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (userAction === -1) { //nếu chưa like/dislike ->create
-      try {
-        const actionRes = await axios.post(`http://localhost:5000/api/v1/cmt-act`, {
-          commentId: item?.id,
-          channelId: currentChannel?.id,
-          action: 1
-        })
-        if (actionRes.status === 201) {
-          setUserAction(1);
-          setCountLike(pre => (pre + 1))
+      } else if (userAction === -1) { //nếu chưa like/dislike ->create
+        try {
+          const actionRes = await axios.post(`http://localhost:5000/api/v1/cmt-act`, {
+            commentId: item?.id,
+            channelId: currentChannel?.id,
+            action: 1
+          })
+          if (actionRes.status === 201) {
+            setUserAction(1);
+            setCountLike(pre => (pre + 1))
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
       }
+    } else {
+      notification.warning({
+        message: "Please sign in to like this comment.",
+        style: {
+          top: 5,
+        },
+      });
     }
   }
 
   const handleDislikeCmt = async () => {
-    if (userAction === 1) { //nếu đang like ->update
-      try {
-        const actionRes = await axios.put(`http://localhost:5000/api/v1/cmt-act`, {
-          commentId: item?.id,
-          channelId: currentChannel?.id,
-          action: 0
-        })
-        // console.log("dislike", actionRes);
-        if (actionRes.status === 200) {
-          setUserAction(0);
-          setCountLike(pre => (pre - 1))
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (userAction === 0) { //nếu đang dislike -> remove
-      try {
-        const actionRes = await axios.delete(`http://localhost:5000/api/v1/cmt-act/${item?.id}/${currentChannel?.id}`)
-        // console.log("dislike", actionRes);
-        if (actionRes.status === 200) {
-          setUserAction(-1);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (userAction === -1) { //nếu chưa like/dislike ->create
-      try {
-        const actionRes = await axios.post(`http://localhost:5000/api/v1/cmt-act`, {
-          commentId: item?.id,
-          channelId: currentChannel?.id,
-          action: 0
-        })
-        if (actionRes.status === 201) {
+    if (currentChannel) {
+      if (userAction === 1) { //nếu đang like ->update
+        try {
+          const actionRes = await axios.put(`http://localhost:5000/api/v1/cmt-act`, {
+            commentId: item?.id,
+            channelId: currentChannel?.id,
+            action: 0
+          })
           // console.log("dislike", actionRes);
-          setUserAction(0);
+          if (actionRes.status === 200) {
+            setUserAction(0);
+            setCountLike(pre => (pre - 1))
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
+      } else if (userAction === 0) { //nếu đang dislike -> remove
+        try {
+          const actionRes = await axios.delete(`http://localhost:5000/api/v1/cmt-act/${item?.id}/${currentChannel?.id}`)
+          // console.log("dislike", actionRes);
+          if (actionRes.status === 200) {
+            setUserAction(-1);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      } else if (userAction === -1) { //nếu chưa like/dislike ->create
+        try {
+          const actionRes = await axios.post(`http://localhost:5000/api/v1/cmt-act`, {
+            commentId: item?.id,
+            channelId: currentChannel?.id,
+            action: 0
+          })
+          if (actionRes.status === 201) {
+            // console.log("dislike", actionRes);
+            setUserAction(0);
+          }
+        } catch (error) {
+          console.log(error);
+        }
       }
+    } else {
+      notification.warning({
+        message: "Please sign in to dislike this comment.",
+        style: {
+          top: 5,
+        },
+      });
     }
   }
 

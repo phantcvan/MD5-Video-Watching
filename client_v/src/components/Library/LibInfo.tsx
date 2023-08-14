@@ -5,22 +5,23 @@ import { useEffect, useState } from "react";
 
 interface LibInfoProp {
   uploadCount: number,
-  likedCount: number
+  likedCount: number,
+  subscribedCount: number,
 }
 
-const LibInfo = ({uploadCount, likedCount}:LibInfoProp) => {
+const LibInfo = ({ uploadCount, likedCount, subscribedCount }: LibInfoProp) => {
   const currentChannel = useSelector(getCurrentChannel);
 
-  
+
   return (
     <div className='flex flex-1 flex-col items-center justify-center h-screen mt-[-50px] gap-2 mr-5'>
-      <img src={currentChannel?.logoUrl} 
-      className="w-20 h-20 rounded-full overflow-hidden object-cover" />
+      <img src={currentChannel?.logoUrl}
+        className="w-20 h-20 rounded-full overflow-hidden object-cover" />
       <span className="mb-6">{currentChannel?.channelName}</span>
       <div className="flex w-full justify-between items-center border-t border-t-yt-light-3 text-sm
         text-yt-light-5">
         <span className="pt-1">Subscriptions</span>
-        <span className="">2</span>
+        <span className="">{subscribedCount}</span>
       </div>
       <div className="flex w-full justify-between items-center border-t border-t-yt-light-3 text-sm
         text-yt-light-5">

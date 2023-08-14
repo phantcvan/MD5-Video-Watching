@@ -102,78 +102,7 @@ export class VideoService {
     };
   }
 
-  async findAllByTag(start: string, tags: { tag: string }[]): Promise<any> {
-    const items_per_page = 9;
-    const startIndex = (Number(start) - 1) * items_per_page;
-    const endIndex = startIndex + items_per_page;
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-    const videosWithinLastMonthQueryBuilder = this.videoRepository.createQueryBuilder('video');
-    videosWithinLastMonthQueryBuilder
-      .leftJoinAndSelect('video.channel', 'channel')
-      .where('video.upload_date >= :oneMonthAgo', { oneMonthAgo })
-      .orderBy('RAND()') // Sắp xếp ngẫu nhiên
-      .select([
-        'video.id',
-        'video.videoUrl',
-        'video.title',
-        'video.description',
-        'video.thumbnail',
-        'video.upload_date',
-        'video.videoCode',
-        'video.views',
-        'channel.id',
-        'channel.email',
-        'channel.channelName',
-        'channel.logoUrl',
-        'channel.thumbnailM',
-        'channel.channelCode',
-        'channel.recordHistory',
-      ])
-      .take(items_per_page);
-
-    const videosAfterLastMonthQueryBuilder = this.videoRepository.createQueryBuilder('video');
-    videosAfterLastMonthQueryBuilder
-      .leftJoinAndSelect('video.channel', 'channel')
-      .where('video.upload_date < :oneMonthAgo', { oneMonthAgo })
-      .orderBy('video.upload_date', 'DESC')
-      .select([
-        'video.id',
-        'video.videoUrl',
-        'video.title',
-        'video.description',
-        'video.thumbnail',
-        'video.upload_date',
-        'video.videoCode',
-        'video.views',
-        'channel.id',
-        'channel.email',
-        'channel.channelName',
-        'channel.logoUrl',
-        'channel.thumbnailM',
-        'channel.channelCode',
-      ])
-      .take(items_per_page);
-
-    const [videosWithinLastMonth, totalWithinLastMonth] = await videosWithinLastMonthQueryBuilder
-      .skip(startIndex)
-      .getManyAndCount();
-
-    const [videosAfterLastMonth, totalAfterLastMonth] = await videosAfterLastMonthQueryBuilder
-      .skip(startIndex)
-      .getManyAndCount();
-
-    const res = videosWithinLastMonth.concat(videosAfterLastMonth);
-    const total = totalWithinLastMonth + totalAfterLastMonth;
-
-    const totalPages = Math.ceil(total / items_per_page);
-    const lastPage = endIndex >= total;
-
-    return {
-      videos: res,
-      lastPage: lastPage,
-    };
+  async findAllByTag(tag): Promise<any> {
   }
 
   // lấy video mới nhất thuộc về channel Id
@@ -194,7 +123,7 @@ export class VideoService {
       .innerJoinAndSelect('video.channel', 'channel')
       .where(
         `video.title LIKE :searchQuery OR video.description LIKE :searchQuery 
-        OR channel.channelName LIKE :searchQuery OR channel.email LIKE :searchQuery`,
+        `,
         { searchQuery: `%${searchQuery}%` }
       )
       .orderBy('video.upload_date', 'DESC')

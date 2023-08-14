@@ -23,8 +23,13 @@ const EditChannelInfo = () => {
   const { id: channelCode } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  let jwt = "";
+  const allCookies = document.cookie;
 
-  if (currentChannel?.channelCode !== channelCode) {
+
+  if (!currentChannel) {
+    navigate('/')
+  } else if (currentChannel?.channelCode !== channelCode) {
     navigate('/')
   }
 
@@ -34,78 +39,100 @@ const EditChannelInfo = () => {
     } else setSthChange(false)
   }, [selectedAvatar, selectedCover, nameInput, desInput])
 
+
   // console.log("nameInput", nameInput);
 
   const handleUpdate = async () => {
-    const updateData: ChannelEditType = {
-      channelName: currentChannel?.channelName,
-      about: currentChannel?.about,
-      logoUrl: currentChannel?.logoUrl,
-      thumbnailM: currentChannel?.thumbnailM
-    };
-
-    if (nameInput) updateData.channelName = nameInput;
-    if (desInput) updateData.about = desInput;
-
-    let avatarUrl;
-    if (selectedAvatar) {
-      const formData = new FormData();
-      formData.append('file', selectedAvatar);
-      formData.append('upload_preset', 'youtube');
-      try {
-        const uploadAvatar = await axios.post('https://api.cloudinary.com/v1_1/dbs47qbrd/image/upload', formData);
-        avatarUrl = uploadAvatar.data.secure_url;
-        updateData.logoUrl = avatarUrl;
-      } catch (error) {
-        console.error('Error uploading avatar:', error);
-      }
-    }
-
-    let coverUrl;
-    if (selectedCover) {
-      const formData = new FormData();
-      formData.append('file', selectedCover);
-      formData.append('upload_preset', 'youtube');
-      try {
-        const uploadCover = await axios.post('https://api.cloudinary.com/v1_1/dbs47qbrd/image/upload', formData);
-        coverUrl = uploadCover.data.secure_url;
-        updateData.thumbnailM = coverUrl;
-      } catch (error) {
-        console.error('Error uploading cover:', error);
-      }
-    }
-
     try {
-      const [updateResponse] = await Promise.all([
-        axios.patch(`http://localhost:5000/api/v1/channel/updateInfo/${currentChannel?.id}`, updateData),
-      ]);
-
-      if (updateResponse.data.status === 200) {
-        const newCurrentChannel: ChannelType = {
-          id: currentChannel.id,
-          email: currentChannel.email,
-          channelName: updateData.channelName,
-          joinDate: currentChannel.joinDate,
-          logoUrl: updateData.logoUrl,
-          thumbnailM: updateData.logoUrl,
-          channelCode: currentChannel.channelCode,
-          recordHistory: currentChannel.recordHistory,
-          about: currentChannel.about
+      // Lấy JWT từ cookies
+      const cookieArray = allCookies.split(';');
+      console.log("cookieArray", cookieArray);
+      for (const cookie of cookieArray) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'access_token') {
+          jwt = value;
+          break;
         }
-        console.log('newCurrentChannel', newCurrentChannel);
-        dispatch(setCurrentChannel(newCurrentChannel));
-        notification.success({
-          message: "Update channel information successfully",
-          style: {
-            top: 95,
-            zIndex: 50
-          },
-          duration: 2,
-        });
-        navigate(`/channel/${currentChannel?.channelCode}`)
       }
+      const updateData: ChannelEditType = {
+        channelName: currentChannel?.channelName,
+        about: currentChannel?.about,
+        logoUrl: currentChannel?.logoUrl,
+        thumbnailM: currentChannel?.thumbnailM
+      };
+
+      if (nameInput) updateData.channelName = nameInput;
+      if (desInput) updateData.about = desInput;
+
+      let avatarUrl;
+      if (selectedAvatar) {
+        const formData = new FormData();
+        formData.append('file', selectedAvatar);
+        formData.append('upload_preset', 'youtube');
+        try {
+          const uploadAvatar = await axios.post('https://api.cloudinary.com/v1_1/dbs47qbrd/image/upload', formData);
+          avatarUrl = uploadAvatar.data.secure_url;
+          updateData.logoUrl = avatarUrl;
+        } catch (error) {
+          console.error('Error uploading avatar:', error);
+        }
+      }
+
+      let coverUrl;
+      if (selectedCover) {
+        const formData = new FormData();
+        formData.append('file', selectedCover);
+        formData.append('upload_preset', 'youtube');
+        try {
+          const uploadCover = await axios.post('https://api.cloudinary.com/v1_1/dbs47qbrd/image/upload', formData);
+          coverUrl = uploadCover.data.secure_url;
+          updateData.thumbnailM = coverUrl;
+        } catch (error) {
+          console.error('Error uploading cover:', error);
+        }
+      }
+
+      try {
+        const [updateResponse] = await Promise.all([
+          axios.patch(`http://localhost:5000/api/v1/channel/updateInfo/${currentChannel?.id}`, updateData, {
+            headers: {
+              "Authorization": "Bearer " + jwt,
+            }
+          }),
+        ]);
+
+        if (updateResponse.data.status === 200) {
+          const newCurrentChannel: ChannelType = {
+            id: currentChannel.id,
+            email: currentChannel.email,
+            channelName: updateData.channelName,
+            joinDate: currentChannel.joinDate,
+            logoUrl: updateData.logoUrl,
+            thumbnailM: updateData.logoUrl,
+            channelCode: currentChannel.channelCode,
+            recordHistory: currentChannel.recordHistory,
+            about: currentChannel.about
+          }
+          console.log('newCurrentChannel', newCurrentChannel);
+          dispatch(setCurrentChannel(newCurrentChannel));
+          notification.success({
+            message: "Update channel information successfully",
+            style: {
+              top: 95,
+              zIndex: 50
+            },
+            duration: 2,
+          });
+          navigate(`/channel/${currentChannel?.channelCode}`)
+        }
+      } catch (error) {
+        console.log(error);
+      }
+
+
     } catch (error) {
       console.log(error);
+
     }
   };
 

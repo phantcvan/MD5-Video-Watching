@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query, UseGuards } from '@nestjs/common';
 import { ChannelService } from './channel.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('api/v1/channel')
 export class ChannelController {
@@ -37,6 +38,12 @@ export class ChannelController {
     return await this.channelService.searchChannel(search);
   }
 
+  @Get('/hashtag/:tag')
+  async hashtagChannel(@Param('tag') tag: string) {
+    return await this.channelService.hashtagChannel(tag);
+  }
+
+  @UseGuards(AuthGuard)
   @Patch('updateInfo/:id')
   updateInfoChannel(@Param('id') id: string, @Body() updateChannelDto: UpdateChannelDto) {
     return this.channelService.updateInfoChannel(+id, updateChannelDto);

@@ -1,19 +1,26 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BiSolidImage } from "react-icons/bi";
 
 interface ThumbnailProp {
   imgURL: string,
   setImgURL: React.Dispatch<React.SetStateAction<string>>,
   setMessage: React.Dispatch<React.SetStateAction<string>>,
-  selectInput: number
+  selectInput: number,
+  setIsChange: React.Dispatch<React.SetStateAction<boolean>>
 }
-const Thumbnail = ({ imgURL, setImgURL, setMessage, selectInput }: ThumbnailProp) => {
-
+const Thumbnail = ({ imgURL, setImgURL, setMessage, selectInput, setIsChange }: ThumbnailProp) => {
   const [selectedImg, setSelectedImg] = useState("");
+  const loadingGif = 'https://firebasestorage.googleapis.com/v0/b/ss11-514db.appspot.com/o/images%2Fuploading_Thumb.gif?alt=media&token=d0df8884-4442-4e04-b598-54be5cec8248'
+  useEffect(() => {
+    if (imgURL !== loadingGif) {
+      setSelectedImg(imgURL)
+    }
+  }, [imgURL])
 
 
   const handleImgChange = async (event: any) => {
+    setImgURL(loadingGif)
     const ImgFileArr = event.target.files[0].name.split(".");
     const typeOfImg = ImgFileArr[ImgFileArr.length - 1].toLowerCase();
     if (
@@ -38,6 +45,7 @@ const Thumbnail = ({ imgURL, setImgURL, setMessage, selectInput }: ThumbnailProp
       console.log(typeOfImg);
       setMessage("Please select a image in PNG, JPG, JPEG or BMP format.");
       setSelectedImg("");
+      setIsChange(true)
     }
   };
   return (
@@ -53,17 +61,34 @@ const Thumbnail = ({ imgURL, setImgURL, setMessage, selectInput }: ThumbnailProp
           video. A good thumbnail stands out and draws viewers'
           attention.
         </span>
+
         {selectedImg
-          ? (
+          ? <div className="relative w-52 flex items-center justify-center">
+            <div className="absolute top-0 bg-overlay-70 z-30 w-full aspect-video">
+              <label htmlFor="thumbnail"
+                className={`flex flex-col cursor-pointer items-center gap-2 text-yt-light-4 p-2 rounded-md
+        text-sm `}>
+                <span><BiSolidImage size={24} /></span>
+                <span>Change thumbnail</span>
+              </label>
+              <input
+                type="file"
+                name="thumbnail" id="thumbnail"
+                required
+                className="hidden"
+                onChange={handleImgChange}
+              />
+            </div>
             <img
               src={imgURL}
               alt="Selected Thumbnail"
-              className="w-52 aspect-video overflow-hidden object-cover"
+              className="w-52 aspect-video overflow-hidden object-cover z-20"
             />
-          ) : <div className="w-52">
+          </div>
+          : <div className="w-52">
             <label htmlFor="thumbnail"
               className={`flex flex-col cursor-pointer items-center gap-2 text-yt-light-4 p-2 rounded-md
-              border border-dashed text-sm ${selectInput === 3 ? 'border-[#3EA6FF]' : 'border-yt-light-6 hover:border-yt-light-5'}`}>
+          border border-dashed text-sm ${selectInput === 3 ? 'border-[#3EA6FF]' : 'border-yt-light-6 hover:border-yt-light-5'}`}>
               <span><BiSolidImage size={24} /></span>
               <span>Upload thumbnail</span>
             </label>
@@ -75,8 +100,59 @@ const Thumbnail = ({ imgURL, setImgURL, setMessage, selectInput }: ThumbnailProp
               className="hidden"
               onChange={handleImgChange}
             />
-          </div>
-        }
+          </div>}
+        {/* 
+        {selectedImg
+          ? (
+            <img
+              onMouseEnter={() => setIsHover(true)}
+              onMouseLeave={() => setIsHover(false)}
+              src={imgURL}
+              alt="Selected Thumbnail"
+              className="w-52 aspect-video overflow-hidden object-cover"
+            />
+          ) :
+          (imgURL !== loadingGif || isHover)
+            ? <div className="relative w-52 flex items-center justify-center">
+              <div className="absolute top-0 bg-overlay-70 z-30 w-full aspect-video">
+                <label htmlFor="thumbnail"
+                  className={`flex flex-col cursor-pointer items-center gap-2 text-yt-light-4 p-2 rounded-md
+            text-sm `}>
+                  <span><BiSolidImage size={24} /></span>
+                  <span>Change thumbnail</span>
+                </label>
+                <input
+                  type="file"
+                  name="thumbnail" id="thumbnail"
+                  required
+                  // value={selectedImg}
+                  className="hidden"
+                  onChange={handleImgChange}
+                />
+              </div>
+              <img
+                src={imgURL}
+                alt="Selected Thumbnail"
+                className="w-52 aspect-video overflow-hidden object-cover z-20"
+              />
+            </div>
+            : <div className="w-52">
+              <label htmlFor="thumbnail"
+                className={`flex flex-col cursor-pointer items-center gap-2 text-yt-light-4 p-2 rounded-md
+              border border-dashed text-sm ${selectInput === 3 ? 'border-[#3EA6FF]' : 'border-yt-light-6 hover:border-yt-light-5'}`}>
+                <span><BiSolidImage size={24} /></span>
+                <span>Upload thumbnail</span>
+              </label>
+              <input
+                type="file"
+                name="thumbnail" id="thumbnail"
+                required
+                // value={selectedImg}
+                className="hidden"
+                onChange={handleImgChange}
+              />
+            </div>
+        } */}
       </div>
     </div>
   )

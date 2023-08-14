@@ -5,7 +5,7 @@ import { FaRegBell } from "react-icons/fa"
 import { getCurrentDate, handleNumber } from "../../static/fn"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
-import { Tooltip } from "antd"
+import { Tooltip, notification } from "antd"
 import axios from "axios";
 import { signInWithPopup, signOut } from "firebase/auth";
 import { auth, provider } from "../../firebase";
@@ -33,39 +33,49 @@ const Header = ({ channel, subscribers, videoCount, setPick }: HeaderProp) => {
   }, [channelsSub, channel]);
 
   const handleAddSubscribe = async () => {
-    if (isSubscribe) {
-      try {
-        const [subscribeResponse] = await Promise.all([
-          axios.delete(`http://localhost:5000/api/v1/subscribe/${currentChannel?.id}/${channel?.id}`),
-
-        ])
-        if (subscribeResponse?.status === 200) {
-          const updatedChannelsSub = channelsSub.filter((ch: ChannelType) => ch.id !== channel?.id)
-          dispatch(setChannelsSub(updatedChannelsSub))
-          setIsSubscribe(false)
-        }
-      } catch (error) {
-        console.log(error);
-      }
+    if (!currentChannel) {
+      notification.warning({
+        message: "Sign in to subscribe to this channel.",
+        style: {
+          top: 95,
+          zIndex: 50
+        },
+        duration: 2,
+      });
     } else {
-      try {
-        const [subscribeResponse, channelSubResponse] = await Promise.all([
-          axios.post(`http://localhost:5000/api/v1/subscribe/`, {
-            userId: currentChannel?.id,
-            subscribed_id: channel?.id
-          }),
-          axios.get(`http://localhost:5000/api/v1/channel/findChannel/${channel?.id}`)
-        ])
-        if (subscribeResponse?.status === 201 && channelSubResponse?.status === 200) {
-          const newSub = channelSubResponse?.data
-          const updatedChannelsSub = [...channelsSub, newSub]
-          dispatch(setChannelsSub(updatedChannelsSub))
-          setIsSubscribe(true)
+      if (isSubscribe) {
+        try {
+          const [subscribeResponse] = await Promise.all([
+            axios.delete(`http://localhost:5000/api/v1/subscribe/${currentChannel?.id}/${channel?.id}`),
+  
+          ])
+          if (subscribeResponse?.status === 200) {
+            const updatedChannelsSub = channelsSub.filter((ch: ChannelType) => ch.id !== channel?.id)
+            dispatch(setChannelsSub(updatedChannelsSub))
+            setIsSubscribe(false)
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
+      } else {
+        try {
+          const [subscribeResponse, channelSubResponse] = await Promise.all([
+            axios.post(`http://localhost:5000/api/v1/subscribe/`, {
+              userId: currentChannel?.id,
+              subscribed_id: channel?.id
+            }),
+            axios.get(`http://localhost:5000/api/v1/channel/findChannel/${channel?.id}`)
+          ])
+          if (subscribeResponse?.status === 201 && channelSubResponse?.status === 200) {
+            const newSub = channelSubResponse?.data
+            const updatedChannelsSub = [...channelsSub, newSub]
+            dispatch(setChannelsSub(updatedChannelsSub))
+            setIsSubscribe(true)
+          }
+        } catch (error) {
+          console.log(error);
+        }
       }
-
     }
   }
 

@@ -49,15 +49,12 @@ export class TagService {
     const [tags] = await tagsQueryBuilder
       .getManyAndCount();
     const uniqueTagsSet = new Set(tags.map((tag) => tag.tag));
-
     // Chuyển đổi Set thành mảng đối tượng với cấu trúc { tag: 'value' }
     const uniqueTagsArray = Array.from(uniqueTagsSet).map((tag) => ({ tag }));
-
     return uniqueTagsArray;
   }
 
   async findAllVideoWithTagInfo(tag: string): Promise<Video[]> {
-
     const videos = await this.videoRepository
       .createQueryBuilder('video')
       .innerJoinAndSelect('video.tags', 'tag', 'tag.tag = :tag', { tag }) // Lấy video có tag cụ thể
@@ -77,7 +74,6 @@ export class TagService {
       ])
       .orderBy('video.upload_date', 'DESC')
       .getMany();
-
     return videos;
   }
 
@@ -120,6 +116,19 @@ export class TagService {
       .select('DISTINCT(tag.tag)', 'tag')
       .where('tag.videoId = :videoId', { videoId }) // Sử dụng dấu hai chấm và tên tham số
       .getRawMany();
+  }
+
+  async searchTag(keyword: string) {
+    const results = await this.tagRepository
+      .createQueryBuilder('tag')
+      .select(['tag.id', 'tag.tag'])
+      .where('tag.tag LIKE :keyword', { keyword: `%${keyword}%` })
+      .getMany();
+
+    return results.map(tag => ({
+      id: tag.id,
+      tag: tag.tag,
+    }));
   }
 
 

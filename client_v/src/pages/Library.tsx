@@ -32,6 +32,7 @@ const Library = () => {
   const [home, setHome] = useState(false);
   const [uploadCount, setUploadCount] = useState(0);
   const [likedCount, setLikedCount] = useState(0);
+  const [subscribedCount, setSubscribedCount] = useState(0);
   const allCookies = document.cookie;
   const navigate = useNavigate();
 
@@ -103,10 +104,11 @@ const Library = () => {
       });
       dispatch(setCurrentChannel(response?.data))
       try {
-        const [videosResponse, uploadResponse, reactionResponse] = await Promise.all([
+        const [videosResponse, uploadResponse, reactionResponse, subscribeResponse] = await Promise.all([
           axios.get(`http://localhost:5000/api/v1/history/${response?.data?.id}`),
           axios.get(`http://localhost:5000/api/v1/videos/videosBelongChannel/${response?.data?.id}`),
           axios.get(`http://localhost:5000/api/v1/reaction/filterByChannelId/${response?.data?.id}`),
+          axios.get(`http://localhost:5000/api/v1/subscribe/subscribed/${response?.data?.id}`),
         ]);
         // sắp xếp video
         const videoSort = videosResponse?.data?.sort((a: HistoryProp, b: HistoryProp) =>
@@ -123,9 +125,10 @@ const Library = () => {
         // đếm số lượng video đã upload
         setUploadCount(uploadResponse?.data.length)
         // lấy về các reaction
-        // console.log("reactionResponse",reactionResponse?.data);
-        setVideosLiked(reactionResponse?.data)
-        setLikedCount(reactionResponse?.data?.length)
+        console.log("subscribeResponse", subscribeResponse?.data);
+        setVideosLiked(reactionResponse?.data);
+        setLikedCount(reactionResponse?.data?.length);
+        setSubscribedCount(subscribeResponse?.data?.length);
       } catch (error) {
         console.error(error);
       }
@@ -136,6 +139,7 @@ const Library = () => {
     }
   };
   useEffect(() => {
+    dispatch(setPickSidebar("Library"))
     const cookieArray = allCookies.split(';');
     let accessToken = '';
     for (const cookie of cookieArray) {
@@ -146,9 +150,6 @@ const Library = () => {
         dispatch(setPickSidebar("History"))
         break;
       }
-    }
-    if (accessToken === '') {
-      navigate('/')
     }
 
   }, []);
@@ -165,7 +166,7 @@ const Library = () => {
             <LikedLib videosLiked={videosLiked} home={home} likedCount={likedCount} />
           </div>
           <div className="flex flex-1">
-            <LibInfo uploadCount={uploadCount} likedCount={likedCount} />
+            <LibInfo uploadCount={uploadCount} likedCount={likedCount} subscribedCount={subscribedCount} />
           </div>
         </div>
         : <div className='flex flex-col min-h-[calc(100%-53px)] items-center justify-center w-full'>

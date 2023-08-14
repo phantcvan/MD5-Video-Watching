@@ -63,7 +63,17 @@ export class ChannelService {
         { searchQuery: `%${searchQuery}%` })
       .orderBy('channel.joinDate', 'DESC')
       .getOne();
+    return latestChannel;
+  }
 
+  async hashtagChannel(tag: string): Promise<Channel[]> {
+    const latestChannel = await this.channelRepo
+      .createQueryBuilder('channel')
+      .where(`channel.channelName LIKE :tag OR channel.about LIKE :tag 
+      OR channel.email LIKE :tag`,
+        { tag: `%${tag}%` })
+      .orderBy('channel.joinDate', 'DESC')
+      .getMany();
     return latestChannel;
   }
 
@@ -73,11 +83,11 @@ export class ChannelService {
       let find = await this.channelRepo.findOne({
         where: { id },
       });
-      
+
       if (find) {
         // Update only the properties specified in the updateChannelDto
         await this.channelRepo.update(id, updateChannelDto);
-        
+
         return {
           status: 200,
           message: `Channel with ID ${id} updated successfully`,
@@ -90,7 +100,7 @@ export class ChannelService {
       throw error;
     }
   }
-  
+
 
   async updateHistoryRecord(id: number) {
     try {

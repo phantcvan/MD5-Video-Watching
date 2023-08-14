@@ -20,6 +20,8 @@ const Recommend = ({ tags }: RecommendProp) => {
   const [loading, setLoading] = useState(false);
   const [lastPage, setLastPage] = useState(false);
   const [home, setHome] = useState(false);
+  const [editable, setEditable] = useState(false);
+  const [edited, setEdited] = useState(false);
   const [description, setDescription] = useState(false);
   const [start, setStart] = useState(1);
   const [videosTag, setVideosTag] = useState<VideoType[]>([]);
@@ -40,7 +42,7 @@ const Recommend = ({ tags }: RecommendProp) => {
       if (tags && tags.length > 0) {
         const promises1 = tags.map(async (tag) => {
           const withTagResponse = await axios.get(`http://localhost:5000/api/v1/tag/withTag/${tag.tag}`);
-          // console.log("withTagResponse", withTagResponse);
+          console.log("withTagResponse", withTagResponse);
           return withTagResponse?.data;
         });
 
@@ -115,26 +117,33 @@ const Recommend = ({ tags }: RecommendProp) => {
       const [videosResponse] = await Promise.all([
         axios.get(`http://localhost:5000/api/v1/history/${currentChannel?.id}`),
       ]);
-      console.log("videosResponse",videosResponse);
-      
-      // const watchedVideos = videosResponse?.data.map((item: any) => ({
-      //   id: item.id,
-      //   videoUrl: item.videoUrl,
-      //   title: item.title,
-      //   thumbnail: item.thumbnail,
-      //   upload_date: item.upload_date,
-      //   videoCode: item.videoCode,
-      //   description: item.description,
-      //   views: item.views,
-      //   channel: {
-      //     id: item.channelId,
-      //     email: item.email,
-      //     channelCode: item.channelCode,
-      //     channelName: item.channelName,
-      //     logoUrl: item.logoUrl,
-      //   },
-      // }));
-      // setVideosTag(watchedVideos);
+
+      const watchedVideos = videosResponse?.data.map((item: any) => ({
+        id: item?.video.id,
+        videoUrl: item?.video.videoUrl,
+        title: item?.video.title,
+        thumbnail: item?.video.thumbnail,
+        upload_date: item?.video.upload_date,
+        videoCode: item?.video.videoCode,
+        description: item?.video.description,
+        views: item?.video.views,
+        channel: {
+          id: item?.video.channel?.id,
+          email: item?.video.channel.email,
+          channelCode: item?.video.channel.channelCode,
+          channelName: item?.video.channel.channelName,
+          logoUrl: item?.video.channel.logoUrl,
+          about: item?.video.channel.about
+        },
+      }));
+      const uniqueVideos: VideoType[] = [];
+      watchedVideos.forEach((video: VideoType) => {
+        if (!uniqueVideos.some((uniqueVideo) => uniqueVideo.id === video.id)) {
+          uniqueVideos.push(video);
+        }
+      });
+      console.log("videosResponse", uniqueVideos);
+      setVideosTag(uniqueVideos);
     } catch (error) {
       console.error(error);
     }
@@ -198,7 +207,8 @@ const Recommend = ({ tags }: RecommendProp) => {
             </div>
           </Link>
           <div className='flex flex-1 '>
-            <VideoCompInfo video={video} home={home} description={description} />
+            <VideoCompInfo video={video} home={home} description={description} editable={editable}
+              setEdited={setEdited} />
           </div>
         </div>
       ))}

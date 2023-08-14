@@ -59,7 +59,7 @@ const Subscription = () => {
     <div className={`w-full min-h-screen h-[calc(100%-53px)] mt-16 bg-yt-black flex z-0 flex-col ml-[18px]
     sm:px-12 md:px-14 lg:px-16 xl:px-20 hide-scrollbar-y`}>
       {!currentChannel ? (
-        <div className="flex flex-col justify-between items-center m-auto gap-4 mt-5">
+        <div className="flex flex-col justify-between items-center m-auto gap-4 mt-5 text-yt-white">
           <span className="">
             <IoLogoBuffer size={100} />
           </span>

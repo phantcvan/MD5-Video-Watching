@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../../index.css"
 import Title from "./Title";
 import Description from "./Description";
@@ -25,24 +25,34 @@ const UploadStep2 = ({ videoUrl, setOpenUpload }: Step2Prop) => {
   const [tags, setTags] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [fullInfo, setFullInfo] = useState(false);
-  const loadingGif = 'https://res.cloudinary.com/dbs47qbrd/image/upload/v1691744913/uploading_Thumb_nyyc19.gif'
+  const loadingGif = 'https://firebasestorage.googleapis.com/v0/b/ss11-514db.appspot.com/o/images%2Fuploading_Thumb.gif?alt=media&token=d0df8884-4442-4e04-b598-54be5cec8248'
   const [imgURL, setImgURL] = useState(loadingGif);
   const currentChannel = useSelector(getCurrentChannel);
-  const navigate = useNavigate()
-  console.log("newVideo", title, description, imgURL, videoUrl, tags);
+  const navigate = useNavigate();
+  const [isChange, setIsChange] = useState(false);
 
+  console.log("newVideo", title, description, imgURL, videoUrl, tags);
+  useEffect(() => {
+    if (!title) {
+      console.log("2");
+      setSelectInput(1)
+    } else if (!description) {
+      console.log("3");
+      setSelectInput(2)
+    } else if (imgURL === loadingGif) {
+      console.log("4");
+      setSelectInput(3)
+    } else {
+      console.log("5");
+      setFullInfo(true);
+    }
+  }, [title, description, imgURL])
   const handleUpload = async () => {
     if (!title || !description || (imgURL === loadingGif)) {
       setMessage("Please fill out all information");
+      console.log("1");
     }
-    if (!title) {
-      setSelectInput(1)
-    } else if (!description) {
-      setSelectInput(2)
-    } else if (imgURL === loadingGif) {
-      setSelectInput(3)
-    } else {
-      setFullInfo(true);
+    if (fullInfo) {
       const videoCode = uuidv4();
       const upload_date = getCurrentDate()
       const views = 0
@@ -93,12 +103,13 @@ const UploadStep2 = ({ videoUrl, setOpenUpload }: Step2Prop) => {
   return (
     <div className="overflow-y-auto mb-2 px-5 flex flex-col gap-1">
       <Title setSelectInput={setSelectInput} selectInput={selectInput} setTitle={setTitle}
-        setMessage={setMessage} />
+        title={title} setMessage={setMessage} setIsChange={setIsChange} />
       <Description setDescription={setDescription} selectInput={selectInput} setSelectInput={setSelectInput}
-        setMessage={setMessage} />
-      <Thumbnail imgURL={imgURL} setImgURL={setImgURL} setMessage={setMessage} selectInput={selectInput} />
+        setMessage={setMessage} description={description} setIsChange={setIsChange} />
+      <Thumbnail imgURL={imgURL} setImgURL={setImgURL} setMessage={setMessage} selectInput={selectInput}
+        setIsChange={setIsChange} />
       <Tag setTags={setTags} selectInput={selectInput} setSelectInput={setSelectInput} tags={tags}
-        setMessage={setMessage} />
+        setMessage={setMessage} setIsChange={setIsChange} title={title} />
       {message
         ? <div className="w-full flex justify-center gap-2">
           <span className="text-yt-red"><IoWarningOutline size={21} /></span>
@@ -106,11 +117,16 @@ const UploadStep2 = ({ videoUrl, setOpenUpload }: Step2Prop) => {
         </div>
         : <div className="w-full flex justify-center"><span className="py-3">  </span>
         </div>}
-      <button className={`py-2  px-5 rounded-sm text-yt-black font-medium mb-2 w-60 m-auto
-      ${fullInfo ? "bg-[#3EA6FF]" : "bg-yt-light-5 cursor-not-allowed"}`}
-        onClick={handleUpload}>
-        SAVE
-      </button>
+      {fullInfo
+        ? <button className={`py-2  px-5 rounded-sm text-yt-black font-medium mb-2 w-60 m-auto
+        bg-[#3EA6FF]`} onClick={handleUpload}>
+          SAVE
+        </button>
+        : <button className={`py-2  px-5 rounded-sm text-yt-black font-medium mb-2 w-60 m-auto
+        bg-yt-light-5 cursor-not-allowed`}>
+          SAVE
+        </button>}
+
 
     </div>
   )

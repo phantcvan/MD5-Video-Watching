@@ -21,6 +21,7 @@ export default {
       "yt-blue-2": "#3EA6FF",
       "yt-gray": "gray",
       "overlay-40": "rgba(0,0,0,0.4)",
+      "overlay-70": "rgba(0,0,0,0.6)",
       "overlay-w-100": "rgba(0,0,0,0.3)",
     },
     extend: {

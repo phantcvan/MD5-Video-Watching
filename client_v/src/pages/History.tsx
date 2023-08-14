@@ -91,6 +91,7 @@ const History = () => {
   }
 
   useEffect(() => {
+    dispatch(setPickSidebar("History"))
     const cookieArray = allCookies.split(';');
     let accessToken = '';
     for (const cookie of cookieArray) {
@@ -102,9 +103,6 @@ const History = () => {
         dispatch(setPickSidebar("History"))
         break;
       }
-    }
-    if (accessToken === '') {
-      navigate('/')
     }
   }, []);
 

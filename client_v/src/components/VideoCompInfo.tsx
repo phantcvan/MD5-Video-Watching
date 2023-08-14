@@ -10,6 +10,7 @@ import { Button, Modal, Tooltip, notification } from 'antd';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import axios from 'axios';
 import '../index.css'
+import EditVideo from './Edit_Video/EditVideo';
 
 interface VideoComp {
   video: VideoType,
@@ -193,6 +194,8 @@ const VideoCompInfo = ({ video, home, description, editable, setEdited }: VideoC
         </Tooltip>
         // </div>
       )}
+      {edit > 0 &&
+        <EditVideo setEdit={setEdit} videoId={edit} setEdited={setEdited}/>}
       {/* {edit && (
         <VideoDetail
           setEdit={setEdit}

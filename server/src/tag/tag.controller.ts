@@ -25,25 +25,30 @@ export class TagController {
     return this.tagService.findAllVideoWithTagInfo(tag);
   }
 
-  @Get('withoutTag/:tag')
-  async findAllVideoWithoutTagInfo(@Param('tag') tag: string): Promise<Video[]> {
-    return this.tagService.findAllVideoWithoutTagInfo(tag);
+  @Get('search/:keyword')
+  async searchTag(@Param('keyword') keyword: string) {
+    return this.tagService.searchTag(keyword);
   }
 
-  @Get('tagForVideo/:videoId')
-  async findAllTagBelongVideo(@Param('videoId') videoId: string): Promise<Tag[]> {
-    return this.tagService.findAllTagBelongVideo(+videoId);
-  }
-  
-  @UseGuards(AuthGuard)
-  @Put(':videoId')
-  update(@Param('videoId') videoId: string, @Body() updateTagDto: UpdateTagDto) {
-    return this.tagService.update(+videoId, updateTagDto);
-  }
-  
-  @UseGuards(AuthGuard)
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tagService.remove(+id);
-  }
+@Get('withoutTag/:tag')
+async findAllVideoWithoutTagInfo(@Param('tag') tag: string): Promise < Video[] > {
+  return this.tagService.findAllVideoWithoutTagInfo(tag);
+}
+
+@Get('tagForVideo/:videoId')
+async findAllTagBelongVideo(@Param('videoId') videoId: string): Promise < Tag[] > {
+  return this.tagService.findAllTagBelongVideo(+videoId);
+}
+
+@UseGuards(AuthGuard)
+@Put(':videoId')
+update(@Param('videoId') videoId: string, @Body() updateTagDto: UpdateTagDto) {
+  return this.tagService.update(+videoId, updateTagDto);
+}
+
+@UseGuards(AuthGuard)
+@Delete(':id')
+remove(@Param('id') id: string) {
+  return this.tagService.remove(+id);
+}
 }

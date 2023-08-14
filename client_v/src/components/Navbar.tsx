@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { HiMagnifyingGlass, HiOutlineBars3, HiOutlineUserCircle } from 'react-icons/hi2';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
@@ -12,12 +12,14 @@ import { signInWithPopup, signOut } from "firebase/auth";
 import { auth, provider } from "../firebase";
 import { BsPersonCircle } from "react-icons/bs";
 import { RiLogoutCircleRLine } from "react-icons/ri";
-import { getAllChannels, getCurrentChannel, setCurrentChannel } from '../slices/channelSlice';
-import { ChannelType } from '../static/type';
+import { getAllChannels, getCurrentChannel, setChannelsSub, setCurrentChannel } from '../slices/channelSlice';
+import { ChannelType, SearchHistoryType, SearchSuggestType } from '../static/type';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { getCurrentDate } from '../static/fn';
 import { FiEdit3 } from 'react-icons/fi';
+import { Tooltip } from 'antd';
+import { GoHistory } from 'react-icons/go';
 // import { handleAddChannel } from "../static/handleAddChannel";
 
 
@@ -29,30 +31,120 @@ const Navbar = () => {
   // console.log("showMenu", showMenu);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [openUpload, setOpenUpload] = useState(false);
+  const [openTooltip, setOpenTooltip] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryType[]>([]);
+  const [searchSuggest, setSearchSuggest] = useState<SearchSuggestType[]>([]);
   const currentChannel = useSelector(getCurrentChannel);
   const showLogIn = useSelector(getShowLogIn);
   const curWid = useSelector(getCurrentWidth)
-  const allChannels = useSelector(getAllChannels)
+  const allChannels = useSelector(getAllChannels);
+  const tooltipRef = useRef(null);
   // console.log("allChannels", allChannels);
-
-
+  // đóng Tooltip khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (tooltipRef.current) {
+        const clickedOutside = !(tooltipRef.current.contains(event.target));
+        if (clickedOutside) {
+          setOpenTooltip(false);
+          setSearchSuggest([]);
+          setSearchKeyword('')
+        }
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
 
   // Search
-  const handleSearch = () => {
-    if (searchKeyword.replace(/\s+/g, ' ').trim()) {
-      dispatch(setSearchQuery(searchKeyword));
-      navigate({
-        pathname: `/search`,
-        search: createSearchParams({
-          q: searchKeyword
-        }).toString()
-      })
+  const loadSearchHistory = async () => {
+    if (currentChannel) {
+      try {
+        const searchResponse = await axios.get(`http://localhost:5000/api/v1/search/all/${currentChannel?.id}`)
+        // console.log("searchResponse", searchResponse);
+        if (searchResponse?.data.length > 0) {
+          const searchData = searchResponse?.data.reverse().slice(0, 4);
+          setSearchHistory(searchData)
+          setOpenTooltip(true)
+        } else {
+          setOpenTooltip(false)
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
-  };
-  const handleAddKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
+  }
+
+  // console.log("searchHistory", searchHistory);
+  const handleAddKeyword = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const keyword = e.target.value;
     setSearchKeyword(keyword);
-    // console.log(keyword.replace(/\s+/g, ' ').trim());
+    const keywordTrim = keyword.replace(/\s+/g, ' ').trim()
+    const dataFilter = searchHistory?.filter((item: SearchHistoryType) =>
+      item.searchContent.toLowerCase().includes(keywordTrim.toLowerCase()))
+    let searchHistoryLength = 0
+    { dataFilter.length > 4 ? searchHistoryLength = 4 : searchHistoryLength = dataFilter.length }
+    console.log(searchHistoryLength);
+    // const searchHistoryTrim = searchHistory.slice(0, searchHistoryLength)
+    setSearchHistory(dataFilter.slice(0, searchHistoryLength));
+    const suggestLength = 10 - searchHistoryLength;
+    try {
+      const searchData = await axios.get(`http://localhost:5000/api/v1/tag/search/${keywordTrim}`)
+      console.log("searchData", searchData);
+      if (searchData?.data.length > 0) {
+        // bỏ tag trùng
+        const searchUnique: SearchSuggestType[] = [];
+        searchData?.data.forEach((data: SearchSuggestType) => {
+          if (!searchUnique.some((search) => search.tag === data.tag)) {
+            searchUnique.push(data);
+          }
+        });
+        // Kiểm tra xem có bất kỳ searchContent nào trùng với tag của suggestItem không
+        const filteredSearchSuggest = searchUnique.filter(suggestItem => {
+          const hasMatchingContent = dataFilter.slice(0, searchHistoryLength).some(historyItem =>
+            historyItem.searchContent === suggestItem.tag
+          );
+          return !hasMatchingContent;
+        });
+        // cắt ngắn mảng, chỉ lấy tối đa 10 kết quả
+        const searchDataTrim = filteredSearchSuggest?.slice(0, suggestLength);
+        setSearchSuggest(searchDataTrim)
+      }
+      if (searchData?.data.length === 0 && searchHistory.length === 0) {
+        setOpenTooltip(false)
+      } else {
+        setOpenTooltip(true)
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handleSearch = async () => {
+    if (searchKeyword.replace(/\s+/g, ' ').trim()) {
+      const newSearch = {
+        searchContent: searchKeyword.replace(/\s+/g, ' ').trim(),
+        channelId: currentChannel?.id
+      }
+      try {
+        const searchResponse = await axios.post(`http://localhost:5000/api/v1/search`, newSearch)
+        // console.log("searchResponse", searchResponse);
+        if (searchResponse.status === 201) {
+          setOpenTooltip(false)
+          setSearchKeyword('');
+          dispatch(setSearchQuery(searchKeyword));
+          navigate({
+            pathname: `/search`,
+            search: createSearchParams({
+              q: searchKeyword
+            }).toString()
+          })
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -64,27 +156,14 @@ const Navbar = () => {
   // login
   const handleLogin = async () => {
     const response = await signInWithPopup(auth, provider);
-    // console.log("response", response);
-
-    // dispatch(setUser(response?.user));
     handleAddChannel(response?.user);
   };
 
-  // const saveToken = async () => {
-  //   try {
-  //     await axios.post("http://localhost:5000/api/v1/auth")
-  //   } catch (error) {
-
-  //   }
-  // }
   const handleAddChannel = async (user: any) => {
     try {
       const findChannelIndex = allChannels?.findIndex(
         ((e: ChannelType) => e.email == user?.email
         ));
-      // console.log("findChannelIndex", findChannelIndex);
-
-
       if (findChannelIndex === -1) {
         const formattedDate = getCurrentDate();
         const newCode = uuidv4()
@@ -97,12 +176,10 @@ const Navbar = () => {
           channelCode: newCode,
           recordHistory: 1
         };
-        console.log("newChannel", newChannel);
         const [channelResponse, authResponse] = await Promise.all([
           axios.post("http://localhost:5000/api/v1/channel", newChannel),
           axios.post(`http://localhost:5000/api/v1/auth/signUp`, newChannel),
         ]);
-        // console.log("authResponse 1", authResponse);
 
         const randomId = Math.floor(Math.random() * 10000000);
         const newChannelWithId = Object.assign({}, newChannel, {
@@ -111,13 +188,11 @@ const Navbar = () => {
         dispatch(setCurrentChannel(newChannelWithId))
       } else {
         const channelNow = allChannels?.filter((channel: ChannelType) => channel?.email === user?.email)
-        console.log("channelNow", channelNow);
         dispatch(setCurrentChannel(channelNow[0]))
         try {
           const [authResponse] = await Promise.all([
             axios.post(`http://localhost:5000/api/v1/auth/signIn`, channelNow[0]),
           ]);
-          // console.log("authResponse 2", authResponse?.data?.access_token);
           const jwtToken = authResponse?.data?.access_token;
           const expiresInDays = 7; // Số ngày tồn tại của cookies
           const expirationDate = new Date();
@@ -137,19 +212,65 @@ const Navbar = () => {
   const handleLogout = async () => {
     dispatch(setUser(null));
     dispatch(setCurrentChannel(null));
+    dispatch(setChannelsSub(null));
     dispatch(setShowLogIn(false));
     document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     await signOut(auth);
   };
 
+
   const handleDropdownToggle = () => {
     showLogIn == false ? dispatch(setShowLogIn(true)) : dispatch(setShowLogIn(false));
-
   };
-  let channel_id = ""
-  if (currentChannel != null) {
-    // channel_id = allChannels?.find(channel => channel.email === user?.email)?.channel_id;
+
+  const handleDeleteSearch = async (id: number) => {
+    try {
+      const deleteAct = await axios.delete(`http://localhost:5000/api/v1/search/${id}`)
+      if (deleteAct.status === 200) {
+        const newSearchHistory = searchHistory.filter((sh) => sh.id !== id)
+        setSearchHistory(newSearchHistory);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
+
+  const handleClickSearchSuggest = async (item: string) => {
+    if (currentChannel) {
+      const newSearch = {
+        searchContent: item,
+        channelId: currentChannel?.id
+      }
+      try {
+        const searchResponse = await axios.post(`http://localhost:5000/api/v1/search`, newSearch)
+        console.log("searchRespone", searchResponse);
+        if (searchResponse.status === 201) {
+          setOpenTooltip(false)
+          setSearchKeyword('');
+          dispatch(setSearchQuery(item));
+          navigate({
+            pathname: `/search`,
+            search: createSearchParams({
+              q: item
+            }).toString()
+          })
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      setOpenTooltip(false)
+      setSearchKeyword('');
+      dispatch(setSearchQuery(item));
+      navigate({
+        pathname: `/search`,
+        search: createSearchParams({
+          q: item
+        }).toString()
+      })
+    }
+  }
+
 
 
   return (
@@ -171,18 +292,52 @@ const Navbar = () => {
             </div>}
         </div>
 
-        <div className={`h-10 flex flex-row items-center justify-between m-auto basis-[70%]`}>
+        <div className={`h-10 flex flex-row items-center justify-between m-auto basis-[70%] relative`}>
           <div className={`bg-yt-black flex border border-yt-light-black items-center justify-between 
             rounded-3xl h-10 w-[100%]`}>
-            <div className="rounded-l-3xl hover:border hover:border-[#1C62B9] h-10 w-[50vw] flex items-center">
+            <div className="rounded-l-3xl hover:border hover:border-[#1C62B9] h-10 w-[50vw] flex
+             items-center relative" >
               <input
                 type="text"
                 placeholder="Search"
                 value={searchKeyword}
                 onKeyDown={(e) => handleKeyDown(e)}
                 onChange={handleAddKeyword}
+                onClick={loadSearchHistory}
                 className="w-full bg-yt-black h-6 ml-6 text-yt-white text-start focus:outline-none pl-4"
               />
+              {openTooltip
+                && <div className='flex flex-col gap-2 absolute top-12 bg-yt-light-black rounded-md px-2 
+                py-2 w-full' ref={tooltipRef}>
+                  {searchHistory.map((sh) => (
+                    <div className='flex items-center justify-between' key={sh.id}>
+                      <div className='flex gap-3 items-center text-yt-white cursor-pointer'
+                        onClick={() => handleClickSearchSuggest(sh.searchContent)}>
+                        <GoHistory size={18} />
+                        <span className='text-[15px] text-yt-white font-semibold'>
+                          {sh.searchContent}
+                        </span>
+                      </div>
+                      <span className='text-yt-blue cursor-pointer' onClick={() => handleDeleteSearch(sh.id)}>
+                        Remove
+                      </span>
+                    </div>
+                  ))}
+                  {searchSuggest.map((ss) => (
+                    <div className='flex items-center justify-between cursor-pointer' key={ss.id}
+                      onClick={() => handleClickSearchSuggest(ss.tag)}>
+                      <div className='flex gap-3 items-center text-yt-white'>
+                        <HiMagnifyingGlass size={18} />
+                        <span className='text-[15px] text-yt-white font-semibold'>
+                          {ss.tag?.length <= 70
+                            ? ss.tag
+                            : `${ss.tag.substr(0, 70)}...`}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+
+                </div>}
             </div>
             <button className="w-16 h-10 bg-yt-light-black px-2 py-0.5 rounded-r-3xl border-l-2 border-yt-light-black">
               <HiMagnifyingGlass

@@ -11,4 +11,5 @@ export class Search {
 
   @ManyToOne(() => Channel, (channel) => channel.search, { onDelete: "CASCADE" })
   channel: Channel;
+  
 }

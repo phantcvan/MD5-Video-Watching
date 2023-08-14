@@ -3,12 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import "../index.css";
 import axios from 'axios';
 import { getAllTags, getVideos, setAllTags, setVideos } from '../slices/videoSlice';
-import { getAllChannels, getCurrentChannel, setAllChannels, setChannelsSub } from '../slices/channelSlice';
+import { getCurrentChannel, } from '../slices/channelSlice';
 import { useEffect, useState } from 'react';
-import { getUser } from '../slices/userSlice';
 import { AllTags, ChannelType, VideoType } from '../static/type';
 import VideoComp from '../components/VideoComp';
-import MiniSidebar from '../components/MiniSidebar';
 import Tag from '../components/Tag';
 
 const Home = () => {
@@ -38,7 +36,7 @@ const Home = () => {
         axios.get("http://localhost:5000/api/v1/tag"),
         axios.get(`http://localhost:5000/api/v1/videos/all/${start}`),
       ]);
-      const tags = allTagsResponse?.data
+      const tags = allTagsResponse?.data?.filter((tag: AllTags) => tag.tag !== "this is a content for kid")
       const tagsWithAll = [{ tag: "All" }, ...tags, { tag: "Recently uploaded" }, { tag: "Watched" }]
       dispatch(setAllTags(tagsWithAll));
       const newVideos: VideoType[] = [...allVideos, ...videosResponse.data.videos];
@@ -83,7 +81,7 @@ const Home = () => {
   const fetchVideoBelongTag = async () => {
     try {
       const [videosResponse] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/tag/withTag/${isChoice}/${start}`),
+        axios.get(`http://localhost:5000/api/v1/tag/withTag/${isChoice}`),
       ]);
       setVideosTag(videosResponse?.data)
     } catch (error) {
@@ -107,24 +105,33 @@ const Home = () => {
       const [videosResponse] = await Promise.all([
         axios.get(`http://localhost:5000/api/v1/history/${currentChannel?.id}`),
       ]);
+
       const watchedVideos = videosResponse?.data.map((item: any) => ({
-        id: item.id,
-        videoUrl: item.videoUrl,
-        title: item.title,
-        thumbnail: item.thumbnail,
-        upload_date: item.upload_date,
-        videoCode: item.videoCode,
-        description: item.description,
-        views: item.views,
+        id: item?.video.id,
+        videoUrl: item?.video.videoUrl,
+        title: item?.video.title,
+        thumbnail: item?.video.thumbnail,
+        upload_date: item?.video.upload_date,
+        videoCode: item?.video.videoCode,
+        description: item?.video.description,
+        views: item?.video.views,
         channel: {
-          id: item.channelId,
-          email: item.email,
-          channelCode: item.channelCode,
-          channelName: item.channelName,
-          logoUrl: item.logoUrl,
+          id: item?.video.channel?.id,
+          email: item?.video.channel.email,
+          channelCode: item?.video.channel.channelCode,
+          channelName: item?.video.channel.channelName,
+          logoUrl: item?.video.channel.logoUrl,
+          about: item?.video.channel.about
         },
       }));
-      setVideosTag(watchedVideos)
+      const uniqueVideos: VideoType[] = [];
+      watchedVideos.forEach((video: VideoType) => {
+        if (!uniqueVideos.some((uniqueVideo) => uniqueVideo.id === video.id)) {
+          uniqueVideos.push(video);
+        }
+      });
+      console.log("videosResponse", uniqueVideos);
+      setVideosTag(uniqueVideos);
     } catch (error) {
       console.error(error);
     }
@@ -140,6 +147,7 @@ const Home = () => {
       fetchVideoBelongTag()
     }
   }, [isChoice, allVideos]);
+  console.log("currentChannel", currentChannel);
 
   useEffect(() => {
     //chuyển lên đầu trang

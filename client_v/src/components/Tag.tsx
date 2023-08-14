@@ -41,8 +41,8 @@ const Tag = ({ allTags, isChoice, setIsChoice }: TagProp) => {
 
 
   return (
-    <div className='flex max-w-full flex-row mt-2 overflow-x-scroll hide-scrollbar-x text-yt-white gap-3'
-     >
+    <div className='flex max-w-full flex-row my-2 overflow-x-scroll hide-scrollbar-x text-yt-white 
+    gap-3 '>
       <div
         className={`flex w-fit cursor-pointer hover:bg-yt-light-3 rounded-full p-2`}
         onClick={handleScrollLeft}

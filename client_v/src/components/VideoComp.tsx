@@ -17,17 +17,18 @@ const VideoComp = ({ video, home, editable, setEdited }: VideoComp) => {
   const [description, setDescription] = useState(false);
   const dispatch = useDispatch();
   const [openMenu, setOpenMenu] = useState(-1);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   // hiển thị video khi hover
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isHovered) {
-      timer = setTimeout(() => {
-        setShowVideo(true);
-      }, 500);
+    if (isHovered && videoLoaded) {
+      setShowVideo(true);
     }
-    return () => clearTimeout(timer);
-  }, [isHovered]);
+  }, [isHovered, videoLoaded]);
+  console.log("showVideo", showVideo);
+  console.log("isHovered", isHovered);
+  console.log("videoLoaded", videoLoaded);
+
   const handleMouseEnter = () => {
     setIsHovered(true);
   };
@@ -47,6 +48,8 @@ const VideoComp = ({ video, home, editable, setEdited }: VideoComp) => {
     <div className={`flex flex-col cursor-pointer mt-2 object-cover w-full`}>
       <Link to={`/video/${video.videoCode}`} onClick={handleVideoClick}>
         <div className={`overflow-hidden rounded-2xl w-full aspect-video`}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
           {showVideo ? (
             <ReactPlayer
@@ -55,23 +58,37 @@ const VideoComp = ({ video, home, editable, setEdited }: VideoComp) => {
               muted
               width='100%'
               height='100%'
-              // style={{aspectRatio: "4/3"}}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
             />
-          ) : (
-            <img
-              src={video.thumbnail}
-              alt=""
-              className={`w-[100%] object-cover z-10 aspect-video`}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            />
-          )}
+          ) : isHovered
+            ? <div className='relative'>
+              <div className='absolute top-0 z-20'>
+                <ReactPlayer
+                  url={video.videoUrl}
+                  playing={true}
+                  muted
+                  width='100%'
+                  height='100%'
+                  // style={{aspectRatio: "4/3"}}
+                  onReady={() => setVideoLoaded(true)}
+                />
+              </div>
+              <img
+                src={video.thumbnail}
+                alt=""
+                className={`w-[100%] object-cover aspect-video absolute top-0 z-30`}
+              />
+            </div>
+            : (
+              <img
+                src={video.thumbnail}
+                alt=""
+                className={`w-[100%] object-cover z-10 aspect-video`}
+              />
+            )}
         </div>
       </Link>
       <VideoCompInfo video={video} home={home} description={description} editable={editable}
-      setEdited={setEdited}/>
+        setEdited={setEdited} />
 
     </div>
   )

@@ -58,3 +58,13 @@ export interface CmtAct {
   action: number;
   channelId: number;
 }
+
+export interface SearchHistoryType {
+  id: number;
+  searchContent: string;
+  channel: ChannelType;
+}
+export interface SearchSuggestType {
+  id: number;
+  tag: string;
+}

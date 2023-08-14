@@ -36,6 +36,8 @@ const UploadStep1 = ({ setVideoUrl, setStep }: Step1Prop) => {
         const uploadVideo = await axios.post('https://api.cloudinary.com/v1_1/dbs47qbrd/video/upload', formData);
         setVideoUrl(uploadVideo.data.secure_url);
         setImageSrc(upload2);
+        console.log("upload2", uploadVideo.data.secure_url);
+
         setStep(2);
       } catch (error) {
         console.error('Error uploading cover:', error);

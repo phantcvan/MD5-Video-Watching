@@ -21,10 +21,9 @@ export class VideoController {
     return this.videoService.findAll(start);
   }
 
-  @Get('allByTag/:start')
-  findAllByTag(@Param('start') start: string, @Query('tags') tags: string): Promise<any> {
-    const parsedTags = JSON.parse(tags);
-    return this.videoService.findAllByTag(start, parsedTags);
+  @Get('allByTag/:tag')
+  findAllByTag(@Param('tag') tag: string): Promise<any> {
+    return this.videoService.findAllByTag(tag);
   }
 
   @Get('find/search')

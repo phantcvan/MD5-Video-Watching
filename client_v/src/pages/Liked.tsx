@@ -66,10 +66,10 @@ const Liked = () => {
 
   }, []);
   const backgroundStyle = {
-    backgroundImage: `linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 1)), url(${finalVideo?.thumbnail})`,
-    backgroundRepeat: 'no-repeat', // Ảnh không lặp lại
-    backgroundSize: '100% auto',   // Hiển thị độ rộng bằng với độ rộng của khối div và tỷ lệ cao tự động
-    backgroundPosition: 'center',  // Căn giữa ảnh
+    backgroundImage: `linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 1)), url(${finalVideo?.thumbnail})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '2500% auto', 
+    backgroundPosition: 'center top', 
   };
 
 

@@ -22,13 +22,11 @@ const VideoAction = ({ video }: VideoComp) => {
 
   const fetchReactionData = async () => {
     try {
-      const [myReactionResponse, allLikeReaction] = await Promise.all([
-        axios.get(`http://localhost:5000/api/v1/reaction/reactionOfVideo/${video?.id}/${currentChannel?.id}`),
-        axios.get(`http://localhost:5000/api/v1/reaction/allLike/${video?.id}`)
-
-      ])
-      // console.log("userAction RES", allLikeReaction);
-      if (myReactionResponse?.data) setUserAction(myReactionResponse?.data?.action)
+      const allLikeReaction = await axios.get(`http://localhost:5000/api/v1/reaction/allLike/${video?.id}`)
+      if (currentChannel) {
+        const myReactionResponse = await axios.get(`http://localhost:5000/api/v1/reaction/reactionOfVideo/${video?.id}/${currentChannel?.id}`)
+        if (myReactionResponse?.data) setUserAction(myReactionResponse?.data?.action)
+      }
       setCountLike(allLikeReaction?.data)
     } catch (error) {
       console.log(error);
@@ -41,81 +39,99 @@ const VideoAction = ({ video }: VideoComp) => {
   // console.log("userAction", userAction);
 
   const handleLikeClick = async () => {
-    if (userAction === 0) {// nêu người dùng đang dislike -> update reaction
-      try {
-        const [likeResponse] = await Promise.all([
-          axios.put(`http://localhost:5000/api/v1/reaction`, {
-            videoId: video?.id,
-            channelId: currentChannel?.id,
-            action: 1
-          })
-        ])
-        if (likeResponse?.status===200){
-          setUserAction(1);
-          setCountLike(pre => (pre + 1))
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (userAction === 1) { // nếu người dùng đang like -> delete
-      try {
-        const likeResponse = await axios.delete(`http://localhost:5000/api/v1/reaction/${video?.id}/${currentChannel?.id}`)
-        if (likeResponse?.status===200){
-          setUserAction(-1);
-          setCountLike(pre => (pre - 1))
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (userAction === -1) { // nếu người dùng chưa like/dislike ->create
-      try {
-        const likeResponse = await axios.post(`http://localhost:5000/api/v1/reaction`,
-          {
-            videoId: video?.id,
-            channelId: currentChannel?.id,
-            action: 1
-          })
-          if (likeResponse?.status===201){
+    if (currentChannel) {
+      if (userAction === 0) {// nêu người dùng đang dislike -> update reaction
+        try {
+          const [likeResponse] = await Promise.all([
+            axios.put(`http://localhost:5000/api/v1/reaction`, {
+              videoId: video?.id,
+              channelId: currentChannel?.id,
+              action: 1
+            })
+          ])
+          if (likeResponse?.status === 200) {
             setUserAction(1);
             setCountLike(pre => (pre + 1))
           }
-      } catch (error) {
-        console.log(error);
+        } catch (error) {
+          console.log(error);
+        }
+      } else if (userAction === 1) { // nếu người dùng đang like -> delete
+        try {
+          const likeResponse = await axios.delete(`http://localhost:5000/api/v1/reaction/${video?.id}/${currentChannel?.id}`)
+          if (likeResponse?.status === 200) {
+            setUserAction(-1);
+            setCountLike(pre => (pre - 1))
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      } else if (userAction === -1) { // nếu người dùng chưa like/dislike ->create
+        try {
+          const likeResponse = await axios.post(`http://localhost:5000/api/v1/reaction`,
+            {
+              videoId: video?.id,
+              channelId: currentChannel?.id,
+              action: 1
+            })
+          if (likeResponse?.status === 201) {
+            setUserAction(1);
+            setCountLike(pre => (pre + 1))
+          }
+        } catch (error) {
+          console.log(error);
+        }
       }
+    } else {
+      notification.warning({
+        message: "Please sign in to like this video.",
+        style: {
+          top: 5,
+        },
+      });
     }
   }
   const handleDislikeClick = async () => {
-    if (userAction === 1) {// nêu người dùng đang like -> update reaction
-      try {
-        await axios.put(`http://localhost:5000/api/v1/reaction`, {
-          videoId: video?.id,
-          channelId: currentChannel?.id,
-          action: 0
-        })
-        setUserAction(0);
-        setCountLike(pre => (pre - 1))
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (userAction === 0) { // nếu người dùng đang dislike -> delete
-      try {
-        await axios.delete(`http://localhost:5000/api/v1/reaction/${video?.id}/${currentChannel?.id}`)
-        setUserAction(-1);
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (userAction === -1) { // nếu người dùng chưa like/dislike ->create
-      try {
-        await axios.post(`http://localhost:5000/api/v1/reaction`,
-          {
+    if (currentChannel) {
+      if (userAction === 1) {// nêu người dùng đang like -> update reaction
+        try {
+          await axios.put(`http://localhost:5000/api/v1/reaction`, {
             videoId: video?.id,
             channelId: currentChannel?.id,
             action: 0
           })
-        setUserAction(0);
-      } catch (error) {
-        console.log(error);
+          setUserAction(0);
+          setCountLike(pre => (pre - 1))
+        } catch (error) {
+          console.log(error);
+        }
+      } else if (userAction === 0) { // nếu người dùng đang dislike -> delete
+        try {
+          await axios.delete(`http://localhost:5000/api/v1/reaction/${video?.id}/${currentChannel?.id}`)
+          setUserAction(-1);
+        } catch (error) {
+          console.log(error);
+        }
+      } else if (userAction === -1) { // nếu người dùng chưa like/dislike ->create
+        try {
+          await axios.post(`http://localhost:5000/api/v1/reaction`,
+            {
+              videoId: video?.id,
+              channelId: currentChannel?.id,
+              action: 0
+            })
+          setUserAction(0);
+        } catch (error) {
+          console.log(error);
+        }
       }
+    } else {
+      notification.warning({
+        message: "Please sign in to dislike this video.",
+        style: {
+          top: 5,
+        },
+      });
     }
 
   }
