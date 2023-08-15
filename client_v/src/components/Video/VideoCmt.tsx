@@ -177,7 +177,7 @@ const VideoCmt = ({ video, forKid }: VideoComp) => {
           {currentChannel ? (
             <form
               onSubmit={addCommentL1}
-              className="flex w-full pt-4 items-start"
+              className="flex w-full pt-4 items-start gap-2"
             >
               <div>
                 <img
